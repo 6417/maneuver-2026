@@ -25,6 +25,29 @@ Maneuver uses a generic `ScoutingEntry`. This file defines how to take the raw a
 ### 3. Analysis & Display (`analysis.ts`)
 Defines "Stat Cards" and "Rate Cards" for the Team Stats page. You define the *metadata* here (titles, labels, colors), and the UI will render them.
 
+**Key Function: `getStartPositionConfig()`**
+
+This is the **single source of truth** for auto start position configuration, shared by both the scouting workflow and team stats:
+
+```typescript
+getStartPositionConfig(): StartPositionConfig {
+    return {
+        positionCount: 5,                    // Number of starting positions
+        positionLabels: ['Pos 0', ...],      // Labels for each position
+        positionColors: ['blue', ...],       // Colors for stat cards
+        fieldImageRed: fieldMapImage,        // Red alliance field image
+        fieldImageBlue: fieldMapBlueImage,   // Blue alliance field image
+        zones: [                             // Clickable zones (640x480 base)
+            { x: 0, y: 50, width: 128, height: 100, position: 0 },
+            // ... more zones
+        ],
+    };
+}
+```
+
+- **`fieldImageRed` / `fieldImageBlue`**: Import your field map images and reference them here
+- **`zones`**: Define clickable zones with coordinates on a 640x480 base canvas
+
 ### 4. Strategy Configuration (`strategy-config.ts`)
 Configures the **Strategy Overview** page with team statistics table and charts. This file defines:
 

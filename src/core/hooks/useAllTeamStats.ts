@@ -39,7 +39,7 @@ export const useAllTeamStats = (eventKey?: string): UseAllTeamStatsResult => {
         // Group matches by team + event
         const matchesByTeam = matches.reduce((acc, match) => {
             const teamNumber = match.teamNumber;
-            const event = match.eventKey || match.eventName || "Unknown";
+            const event = match.eventKey || "Unknown";
 
             if (!teamNumber) return acc;
 
@@ -47,27 +47,26 @@ export const useAllTeamStats = (eventKey?: string): UseAllTeamStatsResult => {
             if (!acc[key]) {
                 acc[key] = {
                     teamNumber,
-                    eventName: event,
+                    eventKey: event,
                     matches: [],
                 };
             }
             acc[key].matches.push(match);
             return acc;
-        }, {} as Record<string, { teamNumber: string; eventName: string; matches: ScoutingEntry[] }>);
+        }, {} as Record<string, { teamNumber: number; eventKey: string; matches: ScoutingEntry[] }>);
 
         // Calculate stats for each team (ONCE)
-        const stats: TeamStats[] = Object.values(matchesByTeam).map(({ teamNumber, eventName, matches: teamMatches }) => ({
-            teamNumber,
-            eventName,
-            ...calculateTeamStats(teamMatches),
-        }));
+        const stats: TeamStats[] = Object.values(matchesByTeam).map(({ teamNumber, eventKey, matches: teamMatches }) => {
+            const calculated = calculateTeamStats(teamMatches);
+            return {
+                teamNumber,
+                eventKey,
+                ...calculated,
+            } as TeamStats;
+        });
 
         // Sort by team number
-        return stats.sort((a, b) => {
-            const aNum = parseInt(a.teamNumber);
-            const bNum = parseInt(b.teamNumber);
-            return aNum - bNum;
-        });
+        return stats.sort((a, b) => a.teamNumber - b.teamNumber);
     }, [matches]);
 
     return { teamStats, isLoading, error };

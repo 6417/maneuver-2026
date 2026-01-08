@@ -77,46 +77,48 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
   const calculateViewBox = () => {
     let minX = 0, minY = 0, maxX = 800, maxY = 600;
     const padding = 50;
-    
+
     // Find bounds from only pits and areas (ignore walls since we don't render them)
-    const allPoints: {x: number, y: number}[] = [];
-    
+    const allPoints: { x: number, y: number }[] = [];
+
     if (pitMapData.pits) {
       Object.values(pitMapData.pits).forEach((pit: FlexiblePitData) => {
         if (pit.position?.x !== undefined && pit.position?.y !== undefined) {
-          allPoints.push({x: pit.position.x, y: pit.position.y});
+          allPoints.push({ x: pit.position.x, y: pit.position.y });
           // Also include the full pit area
           if (pit.size?.x !== undefined && pit.size?.y !== undefined) {
             allPoints.push({
-              x: pit.position.x + pit.size.x, 
+              x: pit.position.x + pit.size.x,
               y: pit.position.y + pit.size.y
             });
           }
         }
       });
     }
-    
+
     if (pitMapData.areas) {
       Object.values(pitMapData.areas).forEach((area: FlexibleAreaData) => {
         if (area.position?.x !== undefined && area.position?.y !== undefined) {
-          allPoints.push({x: area.position.x, y: area.position.y});
+          allPoints.push({ x: area.position.x, y: area.position.y });
           if (area.size?.x !== undefined && area.size?.y !== undefined) {
             allPoints.push({
-              x: area.position.x + area.size.x, 
+              x: area.position.x + area.size.x,
               y: area.position.y + area.size.y
             });
           }
         }
       });
     }
-    
+
     if (allPoints.length > 0) {
-      minX = Math.min(...allPoints.map(p => p.x)) - padding;
-      minY = Math.min(...allPoints.map(p => p.y)) - padding;
-      maxX = Math.max(...allPoints.map(p => p.x)) + padding;
-      maxY = Math.max(...allPoints.map(p => p.y)) + padding;
+      const xs = allPoints.map(p => p.x);
+      const ys = allPoints.map(p => p.y);
+      minX = Math.min(...xs) - padding;
+      minY = Math.min(...ys) - padding;
+      maxX = Math.max(...xs) + padding;
+      maxY = Math.max(...ys) + padding;
     }
-    
+
     return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
   };
 
@@ -124,29 +126,33 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
   const isSpatialAssignment = () => {
     return assignments.some((_, index) => {
       if (index === 0) return false;
-      const currentTeam = assignments[index].teamNumber;
-      const prevTeam = assignments[index - 1].teamNumber;
+      const current = assignments[index];
+      const prev = assignments[index - 1];
+      if (!current || !prev) return false;
+
+      const currentTeam = current.teamNumber;
+      const prevTeam = prev.teamNumber;
       const currentPitId = pitAddresses?.[currentTeam.toString()];
       const prevPitId = pitAddresses?.[prevTeam.toString()];
-      
+
       if (!currentPitId || !prevPitId || !pitMapData?.pits) return false;
-      
+
       const currentPit = pitMapData.pits[currentPitId];
       const prevPit = pitMapData.pits[prevPitId];
-      
+
       if (!currentPit || !prevPit) return false;
-      
+
       // Check if spatially close (within reasonable distance)
       const currentPitTyped = currentPit as FlexiblePitData;
       const prevPitTyped = prevPit as FlexiblePitData;
-      
+
       const currentX = currentPitTyped.position?.x || currentPitTyped.x || 0;
       const currentY = currentPitTyped.position?.y || currentPitTyped.y || 0;
       const prevX = prevPitTyped.position?.x || prevPitTyped.x || 0;
       const prevY = prevPitTyped.position?.y || prevPitTyped.y || 0;
-      
+
       const distance = Math.sqrt(
-        Math.pow(currentX - prevX, 2) + 
+        Math.pow(currentX - prevX, 2) +
         Math.pow(currentY - prevY, 2)
       );
       return distance < 100; // Arbitrary threshold for "close"
@@ -163,7 +169,7 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
             <Map className="h-5 w-5" />
             Pit Map - {selectedEvent}
           </CardTitle>
-          
+
           {/* Desktop Action Buttons */}
           <div className="hidden md:flex items-center gap-2">
             {assignments.length > 0 && (
@@ -176,7 +182,7 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                 Clear All Assignments
               </Button>
             )}
-            
+
             {assignmentMode === 'manual' && !assignmentsConfirmed && assignments.length > 0 && (
               <Button
                 onClick={onConfirmAssignments}
@@ -222,7 +228,7 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                 Clear All Assignments
               </Button>
             )}
-            
+
             {assignmentMode === 'manual' && !assignmentsConfirmed && assignments.length > 0 && (
               <Button
                 onClick={onConfirmAssignments}
@@ -251,7 +257,7 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
               helpText="Click on pit locations to assign teams to the selected scout"
             />
           )}
-          
+
           {/* Show legend for confirmed assignments */}
           {assignments.length > 0 && assignmentsConfirmed && (
             <PitScoutLegend
@@ -265,7 +271,7 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
               helpText="Assignments confirmed. Click on pit locations to mark them as completed/incomplete."
             />
           )}
-          
+
           {/* SVG Pit Map */}
           <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
             <svg
@@ -275,23 +281,23 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
               preserveAspectRatio="xMidYMid meet"
             >
               {/* Background */}
-              <rect 
-                x={viewBox.split(' ')[0]} 
-                y={viewBox.split(' ')[1]} 
-                width={viewBox.split(' ')[2]} 
-                height={viewBox.split(' ')[3]} 
-                fill="white" 
-                stroke="#e5e7eb" 
-                strokeWidth="1" 
+              <rect
+                x={viewBox.split(' ')[0]}
+                y={viewBox.split(' ')[1]}
+                width={viewBox.split(' ')[2]}
+                height={viewBox.split(' ')[3]}
+                fill="white"
+                stroke="#e5e7eb"
+                strokeWidth="1"
               />
-          
+
               {/* Render pit areas */}
               {pitMapData.areas && Object.entries(pitMapData.areas).map(([areaId, area]: [string, FlexibleAreaData]) => {
                 const x = area.position?.x || area.x || 0;
                 const y = area.position?.y || area.y || 0;
                 const width = area.size?.x || area.width || 50;
                 const height = area.size?.y || area.height || 50;
-                
+
                 return (
                   <g key={areaId}>
                     <rect
@@ -305,19 +311,19 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                       rx="3"
                     />
                     <text
-                      x={x + width/2}
-                      y={y + height/2}
+                      x={x + width / 2}
+                      y={y + height / 2}
                       textAnchor="middle"
                       fontSize="12"
                       fill="#374151"
                       fontWeight="500"
                     >
-                      {area.label}
+                      {area.label || ""}
                     </text>
                   </g>
                 );
               })}
-              
+
               {/* Render pit locations with click-to-assign functionality */}
               {pitMapData.pits && Object.entries(pitMapData.pits).map(([pitId, pit]: [string, FlexiblePitData]) => {
                 const teamNumber = pit.team ? (typeof pit.team === 'string' ? parseInt(pit.team) : pit.team) : null;
@@ -325,7 +331,7 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                 const y = pit.position?.y || 0;
                 const width = pit.size?.x || 100;
                 const height = pit.size?.y || 100;
-                
+
                 // Find assignment for this team
                 const assignment = teamNumber ? assignments.find(a => a.teamNumber === teamNumber) : null;
                 const isAssigned = !!assignment;
@@ -333,11 +339,11 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                 const isClickableForAssignment = assignmentMode === 'manual' && !assignmentsConfirmed && selectedScoutForAssignment && teamNumber;
                 const isClickableForCompletion = assignmentsConfirmed && isAssigned && teamNumber;
                 const isClickable = isClickableForAssignment || isClickableForCompletion;
-                
+
                 // Get colors based on assignment
                 let fillColor = "rgba(229, 231, 235, 0.3)"; // Empty pit default
                 let strokeColor = "#9ca3af"; // Empty pit default
-                
+
                 if (teamNumber) {
                   if (isAssigned && assignment.scoutName) {
                     const scoutColor = scoutColors[assignment.scoutName];
@@ -355,7 +361,7 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                     strokeColor = "#1f2937";
                   }
                 }
-                
+
                 // Override stroke for clickable state
                 if (isClickable) {
                   if (isClickableForAssignment) {
@@ -364,7 +370,7 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                     strokeColor = "#f59e0b"; // Amber for completion toggle
                   }
                 }
-                
+
                 return (
                   <g key={pitId}>
                     {/* Pit rectangle with scout colors */}
@@ -387,13 +393,13 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                         }
                       }}
                     />
-                    
+
                     {teamNumber && (
                       <>
                         {/* Team number */}
                         <text
-                          x={x + width/2}
-                          y={y + height/2 - 5}
+                          x={x + width / 2}
+                          y={y + height / 2 - 5}
                           textAnchor="middle"
                           fontSize="18"
                           fill="white"
@@ -409,12 +415,12 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                         >
                           {teamNumber}
                         </text>
-                        
+
                         {/* Scout name when assigned */}
                         {isAssigned && (
                           <text
-                            x={x + width/2}
-                            y={y + height/2 + 12}
+                            x={x + width / 2}
+                            y={y + height / 2 + 12}
                             textAnchor="middle"
                             fontSize="10"
                             fill="white"
@@ -423,7 +429,7 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                             {assignment.scoutName}
                           </text>
                         )}
-                        
+
                         {/* Completion checkmark overlay */}
                         {isCompleted && (
                           <>
@@ -449,12 +455,12 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
                         )}
                       </>
                     )}
-                    
+
                     {/* Empty pit display */}
                     {!teamNumber && (
                       <text
-                        x={x + width/2}
-                        y={y + height/2}
+                        x={x + width / 2}
+                        y={y + height / 2}
                         textAnchor="middle"
                         fontSize="12"
                         fill="#6b7280"
@@ -467,20 +473,26 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
               })}
 
               {/* Render labels */}
-              {pitMapData.labels && Object.entries(pitMapData.labels).map(([labelId, label]: [string, FlexibleLabelData]) => (
-                <text
-                  key={labelId}
-                  x={label.position?.x || label.x}
-                  y={label.position?.y || label.y}
-                  fontSize="16"
-                  fill="#374151"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                >
-                  {label.label || label.text}
-                </text>
-              ))}
-          
+              {pitMapData.labels && Object.entries(pitMapData.labels).map(([labelId, label]: [string, FlexibleLabelData]) => {
+                const lx = label.position?.x ?? label.x ?? 0;
+                const ly = label.position?.y ?? label.y ?? 0;
+                const text = label.label ?? label.text ?? "";
+
+                return (
+                  <text
+                    key={labelId}
+                    x={lx}
+                    y={ly}
+                    fontSize="16"
+                    fill="#374151"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                  >
+                    {text}
+                  </text>
+                );
+              })}
+
               {/* Arrow marker definition */}
               <defs>
                 <marker
@@ -499,7 +511,7 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
               </defs>
             </svg>
           </div>
-          
+
           {/* Simple Map Status Legend */}
           <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
@@ -521,12 +533,12 @@ const PitMapCard: React.FC<PitMapCardProps> = ({
               </div>
             )}
           </div>
-          
+
           {/* Spatial Assignment Info */}
           {assignmentsConfirmed && assignments.length > 0 && (
             <div className="text-center text-xs text-muted-foreground mt-2">
-              {isSpatialAssignment() ? 
-                '🗺️ Teams assigned using spatial proximity for optimal scouting routes' : 
+              {isSpatialAssignment() ?
+                '🗺️ Teams assigned using spatial proximity for optimal scouting routes' :
                 '📝 Teams assigned in numerical sequence'
               }
             </div>

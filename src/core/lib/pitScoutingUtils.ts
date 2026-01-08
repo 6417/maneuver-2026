@@ -1,17 +1,19 @@
-import type { PitScoutingEntryBase } from '@/types/database';
-import { 
-  savePitScoutingEntry as dbSavePitScoutingEntry, 
-  loadPitScoutingByTeamAndEvent, 
-  loadAllPitScoutingEntries, 
+import type { PitScoutingEntryBase } from '@/core/types/pit-scouting';
+import {
+  savePitScoutingEntry as dbSavePitScoutingEntry,
+  loadPitScoutingByTeamAndEvent,
+  loadAllPitScoutingEntries,
   loadPitScoutingByTeam,
   loadPitScoutingByEvent,
-  deletePitScoutingEntry as dbDeletePitScoutingEntry, 
+  deletePitScoutingEntry as dbDeletePitScoutingEntry,
   clearAllPitScoutingData as dbClearAllPitScoutingData,
-  getPitScoutingStats as dbGetPitScoutingStats 
-} from './dexieDB';
+  getPitScoutingStats as dbGetPitScoutingStats
+} from '../db/database';
 
-// Type alias for convenience
+// Type alias for convenience - uses the database schema type
 export type PitScoutingEntry = PitScoutingEntryBase;
+
+// Data wrapper for pit scouting entries
 export interface PitScoutingData {
   entries: PitScoutingEntry[];
   lastUpdated: number;
@@ -30,7 +32,7 @@ export const savePitScoutingEntry = async (entry: Omit<PitScoutingEntry, 'id' | 
   try {
     // Check if an entry for this team and event already exists
     const existing = await loadPitScoutingByTeamAndEvent(entry.teamNumber, entry.eventKey);
-    
+
     const completeEntry: PitScoutingEntry = {
       ...entry,
       id: existing?.id || generatePitScoutingId(entry),
@@ -49,8 +51,8 @@ export const savePitScoutingEntry = async (entry: Omit<PitScoutingEntry, 'id' | 
 export const loadPitScoutingData = async (): Promise<PitScoutingData> => {
   try {
     const entries = await loadAllPitScoutingEntries();
-    return { 
-      entries, 
+    return {
+      entries,
       lastUpdated: entries.length > 0 ? Math.max(...entries.map(e => e.timestamp)) : 0
     };
   } catch (error) {
@@ -139,7 +141,7 @@ export const exportPitScoutingData = async (): Promise<PitScoutingData> => {
 export const downloadPitScoutingDataWithImages = async (): Promise<void> => {
   try {
     const pitScoutingData = await loadPitScoutingData();
-    
+
     if (pitScoutingData.entries.length === 0) {
       throw new Error('No pit scouting data found');
     }
@@ -147,7 +149,7 @@ export const downloadPitScoutingDataWithImages = async (): Promise<void> => {
     const jsonString = JSON.stringify(pitScoutingData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = `pit-scouting-with-images-${new Date().toISOString().slice(0, 10)}.json`;
@@ -165,7 +167,7 @@ export const downloadPitScoutingDataWithImages = async (): Promise<void> => {
 export const downloadPitScoutingImagesOnly = async (): Promise<void> => {
   try {
     const pitScoutingData = await loadPitScoutingData();
-    
+
     if (pitScoutingData.entries.length === 0) {
       throw new Error('No pit scouting data found');
     }
@@ -191,7 +193,7 @@ export const downloadPitScoutingImagesOnly = async (): Promise<void> => {
     const jsonString = JSON.stringify(imagesOnlyData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = `pit-scouting-images-only-${new Date().toISOString().slice(0, 10)}.json`;
@@ -222,17 +224,17 @@ export const importPitScoutingData = async (
       const existingTeamEvents = new Set(
         existingEntries.map(e => `${e.teamNumber}-${e.eventKey}`)
       );
-      
-      const newEntries = importData.entries.filter(entry => 
+
+      const newEntries = importData.entries.filter(entry =>
         !existingTeamEvents.has(`${entry.teamNumber}-${entry.eventKey}`)
       );
-      
+
       // Save only new entries
       await Promise.all(newEntries.map(entry => dbSavePitScoutingEntry(entry)));
-      
-      return { 
-        imported: newEntries.length, 
-        duplicatesSkipped: importData.entries.length - newEntries.length 
+
+      return {
+        imported: newEntries.length,
+        duplicatesSkipped: importData.entries.length - newEntries.length
       };
     }
   } catch (error) {
@@ -248,7 +250,7 @@ export const importPitScoutingData = async (
  */
 export const exportPitScoutingToCSV = async (): Promise<string> => {
   const data = await loadPitScoutingData();
-  
+
   if (data.entries.length === 0) {
     return '';
   }
@@ -262,7 +264,7 @@ export const exportPitScoutingToCSV = async (): Promise<string> => {
         Object.keys(obj).forEach(key => {
           const value = obj[key];
           const fullKey = prefix ? `${prefix}.${key}` : key;
-          
+
           if (value && typeof value === 'object' && !Array.isArray(value)) {
             // Recursively flatten nested objects
             flattenObject(value as Record<string, unknown>, fullKey);
@@ -272,7 +274,7 @@ export const exportPitScoutingToCSV = async (): Promise<string> => {
           }
         });
       };
-      
+
       flattenObject(entry.gameData as Record<string, unknown>);
     }
   });
@@ -340,7 +342,7 @@ export const exportPitScoutingToCSV = async (): Promise<string> => {
   });
 
   // Convert to CSV format
-  return [headers, ...rows].map(row => 
+  return [headers, ...rows].map(row =>
     row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
   ).join('\n');
 };
@@ -373,8 +375,8 @@ export const importPitScoutingImagesOnly = async (
     for (const imageEntry of imagesData.entries) {
       // Find existing entry by team and event
       const existingEntry = existingEntries.find(
-        entry => entry.teamNumber === imageEntry.teamNumber && 
-                 entry.eventKey === imageEntry.eventKey
+        entry => entry.teamNumber === imageEntry.teamNumber &&
+          entry.eventKey === imageEntry.eventKey
       );
 
       console.log(`Looking for ${imageEntry.teamNumber}@${imageEntry.eventKey}: ${existingEntry ? 'FOUND' : 'NOT FOUND'}`);
@@ -386,7 +388,7 @@ export const importPitScoutingImagesOnly = async (
           robotPhoto: imageEntry.robotPhoto,
           timestamp: Math.max(existingEntry.timestamp, imageEntry.timestamp) // Keep latest timestamp
         };
-        
+
         await dbSavePitScoutingEntry(updatedEntry);
         updated++;
       } else {

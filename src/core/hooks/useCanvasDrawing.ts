@@ -14,7 +14,7 @@ interface UseCanvasDrawingProps {
   brushColor: string;
   isErasing: boolean;
   onSave: () => void;
-  selectedTeams?: string[]; // Kept for API compatibility, but no longer used
+  selectedTeams?: (number | null)[]; // Kept for API compatibility, but no longer used
 }
 
 export const useCanvasDrawing = ({

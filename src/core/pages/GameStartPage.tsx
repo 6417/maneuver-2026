@@ -82,8 +82,8 @@ const GameStartPage = () => {
     // Fall back to inputs or empty
     return states?.inputs?.selectTeam || "";
   });
-  const [eventName, setEventName] = useState(
-    states?.inputs?.eventName || localStorage.getItem("eventName") || ""
+  const [eventKey, setEventKey] = useState(
+    states?.inputs?.eventKey || localStorage.getItem("eventKey") || ""
   );
   const [predictedWinner, setPredictedWinner] = useState<"red" | "blue" | "none">("none");
 
@@ -106,9 +106,9 @@ const GameStartPage = () => {
   useEffect(() => {
     const loadExistingPrediction = async () => {
       const currentScout = getCurrentScout();
-      if (currentScout && eventName && matchNumber) {
+      if (currentScout && eventKey && matchNumber) {
         try {
-          const existingPrediction = await getPredictionForMatch(currentScout, eventName, matchNumber);
+          const existingPrediction = await getPredictionForMatch(currentScout, eventKey, matchNumber);
           if (existingPrediction) {
             setPredictedWinner(existingPrediction.predictedWinner);
           } else {
@@ -122,7 +122,7 @@ const GameStartPage = () => {
     };
 
     loadExistingPrediction();
-  }, [matchNumber, eventName]);
+  }, [matchNumber, eventKey]);
 
   // Effect to pre-fill fields when in re-scout mode
   useEffect(() => {
@@ -134,7 +134,7 @@ const GameStartPage = () => {
         setAlliance(rescoutAlliance as 'red' | 'blue');
       }
       if (rescoutEventKey) {
-        setEventName(rescoutEventKey);
+        setEventKey(rescoutEventKey);
       }
 
       // Single team or batch mode
@@ -152,9 +152,9 @@ const GameStartPage = () => {
     setPredictedWinner(newPrediction);
 
     const currentScout = getCurrentScout();
-    if (newPrediction !== "none" && currentScout && eventName && matchNumber) {
+    if (newPrediction !== "none" && currentScout && eventKey && matchNumber) {
       try {
-        await createMatchPrediction(currentScout, eventName, matchNumber, newPrediction);
+        await createMatchPrediction(currentScout, eventKey, matchNumber, newPrediction);
         toast.success(`Prediction updated: ${newPrediction} alliance to win`);
       } catch (error) {
         console.error("Error saving prediction:", error);
@@ -178,7 +178,7 @@ const GameStartPage = () => {
       alliance,
       selectTeam,
       scoutName: currentScout,
-      eventName,
+      eventKey,
     };
     const hasNull = Object.values(inputs).some((val) => !val || val === "");
 
@@ -187,7 +187,7 @@ const GameStartPage = () => {
       return false;
     }
 
-    if (!eventName) {
+    if (!eventKey) {
       toast.error("Please set an event name/code first");
       return false;
     }
@@ -205,9 +205,9 @@ const GameStartPage = () => {
     const currentScout = getCurrentScout();
 
     // Save prediction if one was made
-    if (predictedWinner !== "none" && currentScout && eventName && matchNumber) {
+    if (predictedWinner !== "none" && currentScout && eventKey && matchNumber) {
       try {
-        await createMatchPrediction(currentScout, eventName, matchNumber, predictedWinner);
+        await createMatchPrediction(currentScout, eventKey, matchNumber, predictedWinner);
         toast.success(`Prediction saved: ${predictedWinner} alliance to win`);
       } catch (error) {
         console.error("Error saving prediction:", error);
@@ -231,7 +231,7 @@ const GameStartPage = () => {
           alliance,
           scoutName: currentScout,
           selectTeam,
-          eventName,
+          eventKey,
         },
         ...(isRescoutMode && {
           rescout: {
@@ -291,7 +291,7 @@ const GameStartPage = () => {
         {isRescoutMode && (
           <Alert className="flex border-amber-500 bg-amber-50 dark:bg-amber-950/20 py-3">
             <div className="flex items-center gap-3 w-full">
-              <RefreshCw className="h-4 w-4 text-amber-600 flex-shrink-0" />
+              <RefreshCw className="h-4 w-4 text-amber-600 shrink-0" />
               <div className="text-sm text-amber-800 dark:text-amber-200">
                 <span className="font-semibold">Re-scouting:</span> <strong>{rescoutEventKey && `${rescoutEventKey} `}</strong> Match <strong>{rescoutMatch}</strong> for Team <strong>{rescoutTeams.length > 0 ? rescoutTeams[currentTeamIndex] : rescoutTeam}</strong>
                 {rescoutTeams.length > 0 && (
@@ -321,8 +321,8 @@ const GameStartPage = () => {
               <Label>Event Name/Code</Label>
               <div className={isRescoutMode ? "opacity-50 pointer-events-none" : ""}>
                 <EventNameSelector
-                  currentEventName={eventName}
-                  onEventNameChange={setEventName}
+                  currentEventKey={eventKey}
+                  onEventKeyChange={setEventKey}
                 />
               </div>
               <p className="text-xs text-muted-foreground">
@@ -384,8 +384,8 @@ const GameStartPage = () => {
                   onClick={() => setAlliance("red")}
                   disabled={isRescoutMode}
                   className={`h-12 text-lg font-semibold ${alliance === "red"
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : "hover:bg-red-50 hover:text-red-600 hover:border-red-300"
+                    ? "bg-red-500 hover:bg-red-600 text-white"
+                    : "hover:bg-red-50 hover:text-red-600 hover:border-red-300"
                     } ${isRescoutMode ? 'cursor-not-allowed' : ''}`}
                 >
                   <Badge
@@ -399,8 +399,8 @@ const GameStartPage = () => {
                   onClick={() => setAlliance("blue")}
                   disabled={isRescoutMode}
                   className={`h-12 text-lg font-semibold ${alliance === "blue"
-                      ? "bg-blue-500 hover:bg-blue-600 text-white"
-                      : "hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300"
+                    ? "bg-blue-500 hover:bg-blue-600 text-white"
+                    : "hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300"
                     } ${isRescoutMode ? 'cursor-not-allowed' : ''}`}
                 >
                   <Badge
@@ -426,8 +426,8 @@ const GameStartPage = () => {
                   onClick={() => handlePredictionChange("red")}
                   disabled={isRescoutMode}
                   className={`h-10 text-sm font-medium ${predictedWinner === "red"
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : "hover:bg-red-50 hover:text-red-600 hover:border-red-300"
+                    ? "bg-red-500 hover:bg-red-600 text-white"
+                    : "hover:bg-red-50 hover:text-red-600 hover:border-red-300"
                     }`}
                 >
                   Red Wins
@@ -437,8 +437,8 @@ const GameStartPage = () => {
                   onClick={() => handlePredictionChange("blue")}
                   disabled={isRescoutMode}
                   className={`h-10 text-sm font-medium ${predictedWinner === "blue"
-                      ? "bg-blue-500 hover:bg-blue-600 text-white"
-                      : "hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300"
+                    ? "bg-blue-500 hover:bg-blue-600 text-white"
+                    : "hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300"
                     }`}
                 >
                   Blue Wins
@@ -490,7 +490,7 @@ const GameStartPage = () => {
             disabled={
               isRescoutMode
                 ? false  // In re-scout mode, fields are pre-filled so always allow
-                : (!matchNumber || !alliance || !selectTeam || !currentScout || !eventName)
+                : (!matchNumber || !alliance || !selectTeam || !currentScout || !eventKey)
             }
           >
             Start Scouting
@@ -498,13 +498,13 @@ const GameStartPage = () => {
         </div>
 
         {/* Status Indicator */}
-        {matchNumber && alliance && selectTeam && currentScout && eventName && (
+        {matchNumber && alliance && selectTeam && currentScout && eventKey && (
           <Card className="w-full border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20">
             <CardContent>
               <div className="flex items-center gap-2">
                 <Badge className="bg-green-600">Ready</Badge>
                 <span className="text-sm text-green-700 dark:text-green-300">
-                  {eventName} • Match {matchNumber} •{" "}
+                  {eventKey} • Match {matchNumber} •{" "}
                   {alliance.charAt(0).toUpperCase() + alliance.slice(1)} Alliance
                   • Team {selectTeam} • {currentScout}
                 </span>

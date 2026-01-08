@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Scout } from '../lib/dexieDB';
+import type { Scout } from '@/game-template/gamification';
 import { getOrCreateScoutByName } from '../lib/scoutGameUtils';
 
 export const useCurrentScout = () => {
@@ -30,7 +30,7 @@ export const useCurrentScout = () => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    
+
     // Also listen for custom events in case of same-tab updates
     window.addEventListener('scoutChanged', handleStorageChange);
 

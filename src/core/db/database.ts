@@ -42,7 +42,7 @@ export class MatchScoutingDB extends Dexie {
 
   constructor() {
     super('MatchScoutingDB');
-    
+
     // Version 1: Complete schema for maneuver-core template
     this.version(1).stores({
       scoutingData: 'id, teamNumber, matchNumber, allianceColor, scoutName, eventKey, matchKey, timestamp, isCorrected, [teamNumber+eventKey], [scoutName+eventKey+matchNumber]'
@@ -58,9 +58,9 @@ export class PitScoutingDB extends Dexie {
 
   constructor() {
     super('PitScoutingDB');
-    
+
     this.version(1).stores({
-      pitScoutingData: 'id, teamNumber, eventName, scoutName, timestamp, [teamNumber+eventName]'
+      pitScoutingData: 'id, teamNumber, eventKey, scoutName, timestamp, [teamNumber+eventKey]'
     });
   }
 }
@@ -75,18 +75,18 @@ export class ScoutProfileDB extends Dexie {
 
   constructor() {
     super('ScoutProfileDB');
-    
+
     // Version 1: Initial schema
     this.version(1).stores({
       scouts: 'name, stakes, totalPredictions, correctPredictions, currentStreak, longestStreak, lastUpdated',
-      predictions: 'id, scoutName, eventName, matchNumber, predictedWinner, timestamp, verified, [scoutName+eventName+matchNumber]',
+      predictions: 'id, scoutName, eventKey, matchNumber, predictedWinner, timestamp, verified, [scoutName+eventKey+matchNumber]',
       scoutAchievements: '[scoutName+achievementId], scoutName, achievementId, unlockedAt'
     });
 
     // Version 2: Add stakesFromPredictions field (separate prediction stakes from achievement bonuses)
     this.version(2).stores({
       scouts: 'name, stakes, stakesFromPredictions, totalPredictions, correctPredictions, currentStreak, longestStreak, lastUpdated',
-      predictions: 'id, scoutName, eventName, matchNumber, predictedWinner, timestamp, verified, [scoutName+eventName+matchNumber]',
+      predictions: 'id, scoutName, eventKey, matchNumber, predictedWinner, timestamp, verified, [scoutName+eventKey+matchNumber]',
       scoutAchievements: '[scoutName+achievementId], scoutName, achievementId, unlockedAt'
     }).upgrade(tx => {
       // Assume existing stakes are all from predictions for existing users
@@ -157,7 +157,7 @@ export const loadAllScoutingEntries = async <TGameData = Record<string, unknown>
  * Load scouting entries for a specific team
  */
 export const loadScoutingEntriesByTeam = async <TGameData = Record<string, unknown>>(
-  teamNumber: string
+  teamNumber: number
 ): Promise<ScoutingEntryBase<TGameData>[]> => {
   return (await db.scoutingData
     .where('teamNumber')
@@ -169,7 +169,7 @@ export const loadScoutingEntriesByTeam = async <TGameData = Record<string, unkno
  * Load scouting entries for a specific match
  */
 export const loadScoutingEntriesByMatch = async <TGameData = Record<string, unknown>>(
-  matchNumber: string
+  matchNumber: number
 ): Promise<ScoutingEntryBase<TGameData>[]> => {
   return (await db.scoutingData
     .where('matchNumber')
@@ -181,11 +181,11 @@ export const loadScoutingEntriesByMatch = async <TGameData = Record<string, unkn
  * Load scouting entries for a specific event
  */
 export const loadScoutingEntriesByEvent = async <TGameData = Record<string, unknown>>(
-  eventName: string
+  eventKey: string
 ): Promise<ScoutingEntryBase<TGameData>[]> => {
   return (await db.scoutingData
-    .where('eventName')
-    .equals(eventName.toLowerCase())
+    .where('eventKey')
+    .equals(eventKey.toLowerCase())
     .toArray()) as ScoutingEntryBase<TGameData>[];
 };
 
@@ -193,12 +193,12 @@ export const loadScoutingEntriesByEvent = async <TGameData = Record<string, unkn
  * Load scouting entries for a team at a specific event (compound index)
  */
 export const loadScoutingEntriesByTeamAndEvent = async <TGameData = Record<string, unknown>>(
-  teamNumber: string,
-  eventName: string
+  teamNumber: number,
+  eventKey: string
 ): Promise<ScoutingEntryBase<TGameData>[]> => {
   return (await db.scoutingData
-    .where('[teamNumber+eventName]')
-    .equals([teamNumber, eventName.toLowerCase()])
+    .where('[teamNumber+eventKey]')
+    .equals([teamNumber, eventKey.toLowerCase()])
     .toArray()) as ScoutingEntryBase<TGameData>[];
 };
 
@@ -206,21 +206,21 @@ export const loadScoutingEntriesByTeamAndEvent = async <TGameData = Record<strin
  * Find existing entry by match/team/alliance/event
  */
 export const findExistingScoutingEntry = async <TGameData = Record<string, unknown>>(
-  matchNumber: string,
-  teamNumber: string,
-  alliance: string,
-  eventName: string
+  matchNumber: number,
+  teamNumber: number,
+  allianceColor: 'red' | 'blue',
+  eventKey: string
 ): Promise<ScoutingEntryBase<TGameData> | undefined> => {
   const entries = (await db.scoutingData
-    .where({ matchNumber, teamNumber, alliance, eventName: eventName.toLowerCase() })
+    .where({ matchNumber, teamNumber, allianceColor, eventKey: eventKey.toLowerCase() })
     .toArray()) as ScoutingEntryBase<TGameData>[];
-  
+
   if (entries.length > 1) {
     console.warn(
-      `Found ${entries.length} duplicate entries for match ${matchNumber}, team ${teamNumber}, alliance ${alliance}`
+      `Found ${entries.length} duplicate entries for match ${matchNumber}, team ${teamNumber}, alliance ${allianceColor}`
     );
   }
-  
+
   return entries[0];
 };
 
@@ -242,14 +242,14 @@ export const updateScoutingEntryWithCorrection = async <TGameData = Record<strin
   // Extract match info from new data
   const matchNumber = newData.matchNumber;
   const teamNumber = newData.teamNumber;
-  const alliance = newData.alliance;
-  const eventName = newData.eventName;
+  const allianceColor = newData.allianceColor;
+  const eventKey = newData.eventKey;
 
   // Delete ALL other entries for same match/team/alliance to prevent duplicates
   const duplicates = await db.scoutingData
-    .where({ matchNumber, teamNumber, alliance, eventName })
+    .where({ matchNumber, teamNumber, allianceColor, eventKey })
     .toArray();
-  
+
   const otherDuplicates = duplicates.filter(e => e.id !== id);
   if (otherDuplicates.length > 0) {
     await db.scoutingData.bulkDelete(otherDuplicates.map(e => e.id));
@@ -265,7 +265,7 @@ export const updateScoutingEntryWithCorrection = async <TGameData = Record<strin
     lastCorrectedBy: correctedBy,
     correctionNotes: correctionNotes,
   };
-  
+
   await db.scoutingData.put(updatedEntry as ScoutingEntryBase<Record<string, unknown>>);
 };
 
@@ -299,20 +299,20 @@ export const clearAllScoutingData = async (): Promise<void> => {
  */
 export const getDBStats = async (): Promise<DBStats> => {
   const entries = await db.scoutingData.toArray();
-  
+
   const teams = new Set<string>();
   const matches = new Set<string>();
   const scouts = new Set<string>();
   const events = new Set<string>();
   let oldestEntry: number | undefined;
   let newestEntry: number | undefined;
-  
+
   entries.forEach(entry => {
-    if (entry.teamNumber) teams.add(entry.teamNumber);
-    if (entry.matchNumber) matches.add(entry.matchNumber);
+    if (entry.teamNumber) teams.add(String(entry.teamNumber));
+    if (entry.matchNumber) matches.add(String(entry.matchNumber));
     if (entry.scoutName) scouts.add(entry.scoutName);
-    if (entry.eventName) events.add(entry.eventName);
-    
+    if (entry.eventKey) events.add(entry.eventKey);
+
     if (!oldestEntry || entry.timestamp < oldestEntry) {
       oldestEntry = entry.timestamp;
     }
@@ -320,7 +320,7 @@ export const getDBStats = async (): Promise<DBStats> => {
       newestEntry = entry.timestamp;
     }
   });
-  
+
   return {
     totalEntries: entries.length,
     teams: Array.from(teams).sort((a, b) => Number(a) - Number(b)),
@@ -338,9 +338,9 @@ export const getDBStats = async (): Promise<DBStats> => {
 export const getFilterOptions = async (): Promise<FilterOptions> => {
   const stats = await getDBStats();
   const entries = await db.scoutingData.toArray();
-  
-  const alliances = [...new Set(entries.map(e => e.alliance).filter(Boolean))].sort() as string[];
-  
+
+  const alliances = [...new Set(entries.map(e => e.allianceColor).filter(Boolean))].sort() as string[];
+
   return {
     teams: stats.teams,
     matches: stats.matches,
@@ -357,7 +357,7 @@ export const queryScoutingEntries = async <TGameData = Record<string, unknown>>(
   filters: QueryFilters
 ): Promise<ScoutingEntryBase<TGameData>[]> => {
   let collection = db.scoutingData.toCollection();
-  
+
   // Apply date range filter first (if provided)
   if (filters.dateRange) {
     collection = collection.filter(
@@ -365,9 +365,9 @@ export const queryScoutingEntries = async <TGameData = Record<string, unknown>>(
         entry.timestamp >= filters.dateRange!.start && entry.timestamp <= filters.dateRange!.end
     );
   }
-  
+
   const results = await collection.toArray();
-  
+
   // Apply other filters in memory
   return results.filter(entry => {
     if (filters.teamNumbers && entry.teamNumber && !filters.teamNumbers.includes(entry.teamNumber)) {
@@ -376,10 +376,10 @@ export const queryScoutingEntries = async <TGameData = Record<string, unknown>>(
     if (filters.matchNumbers && entry.matchNumber && !filters.matchNumbers.includes(entry.matchNumber)) {
       return false;
     }
-    if (filters.eventNames && entry.eventName && !filters.eventNames.includes(entry.eventName)) {
+    if (filters.eventKeys && entry.eventKey && !filters.eventKeys.includes(entry.eventKey)) {
       return false;
     }
-    if (filters.alliances && entry.alliance && !filters.alliances.includes(entry.alliance)) {
+    if (filters.alliances && entry.allianceColor && !filters.alliances.includes(entry.allianceColor)) {
       return false;
     }
     if (filters.scoutNames && entry.scoutName && !filters.scoutNames.includes(entry.scoutName)) {
@@ -398,36 +398,36 @@ export const queryScoutingEntries = async <TGameData = Record<string, unknown>>(
  */
 export const cleanupDuplicateEntries = async (): Promise<{ deleted: number; total: number }> => {
   console.log('[Cleanup] Starting duplicate entry cleanup...');
-  
+
   try {
     const allEntries = await db.scoutingData.toArray();
     console.log(`[Cleanup] Found ${allEntries.length} total entries`);
-    
+
     // Group by match-team-alliance-event
     const entriesByKey = new Map<string, ScoutingEntryBase[]>();
-    
+
     allEntries.forEach(entry => {
-      const key = `${entry.eventName}-${entry.matchNumber}-${entry.alliance}-${entry.teamNumber}`;
+      const key = `${entry.eventKey}-${entry.matchNumber}-${entry.allianceColor}-${entry.teamNumber}`;
       if (!entriesByKey.has(key)) {
         entriesByKey.set(key, []);
       }
       entriesByKey.get(key)!.push(entry);
     });
-    
+
     // Find and delete duplicates
     const idsToDelete: string[] = [];
-    
+
     entriesByKey.forEach((entries, key) => {
       if (entries.length > 1) {
         console.log(`[Cleanup] Found ${entries.length} duplicates for ${key}`);
-        
+
         // Sort by timestamp (most recent first)
         entries.sort((a, b) => {
           const timeA = a.lastCorrectedAt || a.timestamp || 0;
           const timeB = b.lastCorrectedAt || b.timestamp || 0;
           return timeB - timeA;
         });
-        
+
         // Keep first (most recent), delete rest
         const [keep, ...remove] = entries;
         if (keep) {
@@ -436,7 +436,7 @@ export const cleanupDuplicateEntries = async (): Promise<{ deleted: number; tota
         }
       }
     });
-    
+
     if (idsToDelete.length > 0) {
       console.log(`[Cleanup] Deleting ${idsToDelete.length} duplicate entries`);
       await db.scoutingData.bulkDelete(idsToDelete);
@@ -458,19 +458,19 @@ export const cleanupDuplicateEntries = async (): Promise<{ deleted: number; tota
  */
 export const normalizeAllianceValues = async (): Promise<{ fixed: number; total: number }> => {
   console.log('[Normalize] Fixing alliance values...');
-  
+
   try {
     const allEntries = await db.scoutingData.toArray();
     let fixedCount = 0;
-    
+
     for (const entry of allEntries) {
-      if (entry.alliance && entry.alliance.toLowerCase().includes('alliance')) {
-        const normalizedAlliance = entry.alliance.toLowerCase().replace('alliance', '').trim();
-        await db.scoutingData.update(entry.id, { alliance: normalizedAlliance });
+      if (entry.allianceColor && entry.allianceColor.toLowerCase().includes('alliance')) {
+        const normalizedAlliance = entry.allianceColor.toLowerCase().replace('alliance', '').trim() as 'red' | 'blue';
+        await db.scoutingData.update(entry.id, { allianceColor: normalizedAlliance });
         fixedCount++;
       }
     }
-    
+
     console.log(`[Normalize] Fixed ${fixedCount} entries out of ${allEntries.length} total`);
     return { fixed: fixedCount, total: allEntries.length };
   } catch (error) {
@@ -490,7 +490,7 @@ export const exportScoutingData = async <TGameData = Record<string, unknown>>():
   ScoutingDataExport<TGameData>
 > => {
   const entries = (await loadAllScoutingEntries()) as ScoutingEntryBase<TGameData>[];
-  
+
   return {
     entries,
     exportedAt: Date.now(),
@@ -510,7 +510,7 @@ export const importScoutingData = async <TGameData = Record<string, unknown>>(
     if (mode === 'overwrite') {
       await clearAllScoutingData();
       await db.scoutingData.bulkPut(importData.entries as ScoutingEntryBase<Record<string, unknown>>[]);
-      
+
       return {
         success: true,
         importedCount: importData.entries.length,
@@ -520,9 +520,9 @@ export const importScoutingData = async <TGameData = Record<string, unknown>>(
       const existingIds = await db.scoutingData.orderBy('id').keys();
       const existingIdSet = new Set(existingIds);
       const newEntries = importData.entries.filter(entry => !existingIdSet.has(entry.id));
-      
+
       await db.scoutingData.bulkPut(newEntries as ScoutingEntryBase<Record<string, unknown>>[]);
-      
+
       return {
         success: true,
         importedCount: newEntries.length,
@@ -565,7 +565,7 @@ export const loadAllPitScoutingEntries = async <TPitData = Record<string, unknow
  * Load pit scouting entries for a team
  */
 export const loadPitScoutingByTeam = async <TPitData = Record<string, unknown>>(
-  teamNumber: string
+  teamNumber: number
 ): Promise<PitScoutingEntry<TPitData>[]> => {
   return (await pitDB.pitScoutingData
     .where('teamNumber')
@@ -577,11 +577,11 @@ export const loadPitScoutingByTeam = async <TPitData = Record<string, unknown>>(
  * Load pit scouting entries for an event
  */
 export const loadPitScoutingByEvent = async <TPitData = Record<string, unknown>>(
-  eventName: string
+  eventKey: string
 ): Promise<PitScoutingEntry<TPitData>[]> => {
   return (await pitDB.pitScoutingData
-    .where('eventName')
-    .equals(eventName)
+    .where('eventKey')
+    .equals(eventKey)
     .toArray()) as PitScoutingEntry<TPitData>[];
 };
 
@@ -589,15 +589,15 @@ export const loadPitScoutingByEvent = async <TPitData = Record<string, unknown>>
  * Load pit scouting entry for team at specific event (compound index)
  */
 export const loadPitScoutingByTeamAndEvent = async <TPitData = Record<string, unknown>>(
-  teamNumber: string,
-  eventName: string
+  teamNumber: number,
+  eventKey: string
 ): Promise<PitScoutingEntry<TPitData> | undefined> => {
   try {
     const results = (await pitDB.pitScoutingData
-      .where('[teamNumber+eventName]')
-      .equals([teamNumber, eventName])
+      .where('[teamNumber+eventKey]')
+      .equals([teamNumber, eventKey])
       .toArray()) as PitScoutingEntry<TPitData>[];
-    
+
     // Return most recent if multiple exist
     return results.sort((a, b) => b.timestamp - a.timestamp)[0];
   } catch (error) {
@@ -605,7 +605,7 @@ export const loadPitScoutingByTeamAndEvent = async <TPitData = Record<string, un
     // Fallback to manual filtering
     const allEntries = (await pitDB.pitScoutingData.toArray()) as PitScoutingEntry<TPitData>[];
     const filtered = allEntries.filter(
-      entry => entry.teamNumber === teamNumber && entry.eventName === eventName
+      entry => entry.teamNumber === teamNumber && entry.eventKey === eventKey
     );
     return filtered.sort((a, b) => b.timestamp - a.timestamp)[0];
   }
@@ -630,11 +630,11 @@ export const clearAllPitScoutingData = async (): Promise<void> => {
  */
 export const getPitScoutingStats = async (): Promise<PitScoutingStats> => {
   const entries = await pitDB.pitScoutingData.toArray();
-  
-  const teams = [...new Set(entries.map(e => e.teamNumber))].sort((a, b) => Number(a) - Number(b));
-  const events = [...new Set(entries.map(e => e.eventName))].sort();
+
+  const teams = [...new Set(entries.map(e => e.teamNumber))].sort((a, b) => a - b);
+  const events = [...new Set(entries.map(e => e.eventKey))].sort();
   const scouts = [...new Set(entries.map(e => e.scoutName))].sort();
-  
+
   return {
     totalEntries: entries.length,
     teams,
@@ -652,14 +652,14 @@ export const getPitScoutingStats = async (): Promise<PitScoutingStats> => {
  */
 export const getOrCreateScout = async (name: string): Promise<Scout> => {
   const existingScout = await gameDB.scouts.get(name);
-  
+
   if (existingScout) {
     // Update last updated time
     existingScout.lastUpdated = Date.now();
     await gameDB.scouts.put(existingScout);
     return existingScout;
   }
-  
+
   // Create new scout
   const newScout: Scout = {
     name: name.trim(),
@@ -672,7 +672,7 @@ export const getOrCreateScout = async (name: string): Promise<Scout> => {
     createdAt: Date.now(),
     lastUpdated: Date.now(),
   };
-  
+
   await gameDB.scouts.put(newScout);
   return newScout;
 };
@@ -721,14 +721,14 @@ export const updateScoutStats = async (
     scout.stakesFromPredictions += additionalStakesFromPredictions;
     scout.correctPredictions = correctPredictions;
     scout.totalPredictions = totalPredictions;
-    
+
     if (currentStreak !== undefined) {
       scout.currentStreak = currentStreak;
     }
     if (longestStreak !== undefined) {
       scout.longestStreak = Math.max(scout.longestStreak, longestStreak);
     }
-    
+
     scout.lastUpdated = Date.now();
     await gameDB.scouts.put(scout);
   }
@@ -766,12 +766,12 @@ export const savePrediction = async (prediction: MatchPrediction): Promise<void>
  */
 export const getPrediction = async (
   scoutName: string,
-  eventName: string,
-  matchNumber: string
+  eventKey: string,
+  matchNumber: number
 ): Promise<MatchPrediction | undefined> => {
   return await gameDB.predictions
-    .where('[scoutName+eventName+matchNumber]')
-    .equals([scoutName, eventName, matchNumber])
+    .where('[scoutName+eventKey+matchNumber]')
+    .equals([scoutName, eventKey, matchNumber])
     .first();
 };
 
@@ -786,12 +786,12 @@ export const getAllPredictionsForScout = async (scoutName: string): Promise<Matc
  * Get all predictions for a match
  */
 export const getAllPredictionsForMatch = async (
-  eventName: string,
-  matchNumber: string
+  eventKey: string,
+  matchNumber: number
 ): Promise<MatchPrediction[]> => {
   return await gameDB.predictions
-    .where('eventName')
-    .equals(eventName)
+    .where('eventKey')
+    .equals(eventKey)
     .and(prediction => prediction.matchNumber === matchNumber)
     .toArray();
 };
@@ -818,7 +818,7 @@ export const unlockAchievement = async (
     .where('[scoutName+achievementId]')
     .equals([scoutName, achievementId])
     .first();
-  
+
   if (!existing) {
     await gameDB.scoutAchievements.put({
       scoutName,

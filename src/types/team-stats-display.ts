@@ -81,17 +81,40 @@ export interface MatchBadgeDefinition {
 }
 
 /**
+ * Zone definition for auto start position map visualization
+ * Coordinates are relative to a 640x480 base canvas
+ */
+export interface StartPositionZone {
+  /** Position index (0, 1, 2, etc.) */
+  position: number;
+  /** X coordinate on 640x480 base */
+  x: number;
+  /** Y coordinate on 640x480 base */
+  y: number;
+  /** Width on 640x480 base */
+  width: number;
+  /** Height on 640x480 base */
+  height: number;
+  /** Optional label override for this zone */
+  label?: string;
+}
+
+/**
  * Start position configuration for the Auto tab
  */
 export interface StartPositionConfig {
-  /** Number of starting positions (e.g., 6 for 2025) */
+  /** Number of starting positions (e.g., 5 for 2025 Reefscape) */
   positionCount: number;
   /** Optional custom labels for each position */
   positionLabels?: string[];
   /** Optional colors for each position */
   positionColors?: string[];
-  /** Optional field background image path (game-specific) */
-  fieldImage?: string;
+  /** Field background image path for red alliance (game-specific) */
+  fieldImageRed?: string;
+  /** Field background image path for blue alliance (game-specific) */
+  fieldImageBlue?: string;
+  /** Zone definitions for the auto start position map (coordinates on 640x480 base) */
+  zones?: StartPositionZone[];
 }
 
 /**

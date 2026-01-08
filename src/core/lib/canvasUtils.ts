@@ -13,7 +13,7 @@ export const drawTeamNumbers = (
     ctx: CanvasRenderingContext2D,
     width: number,
     height: number,
-    selectedTeams: string[]
+    selectedTeams: (number | null)[]
 ) => {
     if (!selectedTeams || selectedTeams.length !== 6) return;
 
@@ -40,15 +40,16 @@ export const drawTeamNumbers = (
     ];
 
     blueTeams.forEach(({ team, y }) => {
-        if (team && team.trim() && team !== 'none') {
+        if (team !== null && team !== undefined && team !== 0) {
+            const teamStr = team.toString();
             ctx.save();
             ctx.translate(blueX, y);
             ctx.rotate(Math.PI / 2);
             ctx.fillStyle = 'white';
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 3;
-            ctx.strokeText(team, 0, 0);
-            ctx.fillText(team, 0, 0);
+            ctx.strokeText(teamStr, 0, 0);
+            ctx.fillText(teamStr, 0, 0);
             ctx.restore();
         }
     });
@@ -62,15 +63,16 @@ export const drawTeamNumbers = (
     ];
 
     redTeams.forEach(({ team, y }) => {
-        if (team && team.trim() && team !== 'none') {
+        if (team !== null && team !== undefined && team !== 0) {
+            const teamStr = team.toString();
             ctx.save();
             ctx.translate(redX, y);
             ctx.rotate(-Math.PI / 2);
             ctx.fillStyle = 'white';
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 3;
-            ctx.strokeText(team, 0, 0);
-            ctx.fillText(team, 0, 0);
+            ctx.strokeText(teamStr, 0, 0);
+            ctx.fillText(teamStr, 0, 0);
             ctx.restore();
         }
     });
@@ -103,7 +105,7 @@ export const redrawOverlays = (
     ctx: CanvasRenderingContext2D,
     width: number,
     height: number,
-    selectedTeams: string[]
+    selectedTeams: (number | null)[]
 ) => {
     drawTeamNumbers(ctx, width, height, selectedTeams);
 };
@@ -117,7 +119,7 @@ export const restoreBackgroundWithOverlays = (
     width: number,
     height: number,
     backgroundImage: HTMLImageElement,
-    selectedTeams: string[],
+    selectedTeams: (number | null)[],
     clipRect?: { x: number; y: number; w: number; h: number }
 ) => {
     ctx.save();

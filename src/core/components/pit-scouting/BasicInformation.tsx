@@ -88,8 +88,8 @@ export function BasicInformation({
             Event *
           </Label>
           <EventNameSelector
-            currentEventName={eventKey}
-            onEventNameChange={onEventKeyChange}
+            currentEventKey={eventKey}
+            onEventKeyChange={onEventKeyChange}
           />
         </div>
 

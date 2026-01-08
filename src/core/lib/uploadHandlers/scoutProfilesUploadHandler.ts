@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { gameDB, type Scout, type MatchPrediction } from "@/core/lib/dexieDB";
+import { gamificationDB as gameDB, type Scout, type MatchPrediction } from "@/game-template/gamification";
 import type { UploadMode } from "./scoutingDataUploadHandler";
 
 export const handleScoutProfilesUpload = async (jsonData: unknown, mode: UploadMode): Promise<void> => {
@@ -21,30 +21,30 @@ export const handleScoutProfilesUpload = async (jsonData: unknown, mode: UploadM
       // Clear existing data
       await gameDB.scouts.clear();
       await gameDB.predictions.clear();
-      
+
       // Add all new data
       await gameDB.scouts.bulkAdd(scoutsToImport);
       await gameDB.predictions.bulkAdd(predictionsToImport);
-      
+
       scoutsAdded = scoutsToImport.length;
       predictionsAdded = predictionsToImport.length;
     } else {
       // Get existing data for smart merge/append
       const existingScouts = await gameDB.scouts.toArray();
       const existingPredictions = await gameDB.predictions.toArray();
-      
+
       // Process scouts
       for (const scout of scoutsToImport) {
         const existing = existingScouts.find(s => s.name === scout.name);
-        
+
         if (existing) {
           if (mode === 'smart-merge') {
             // Only update if new data is newer or has higher values
-            const shouldUpdate = 
+            const shouldUpdate =
               scout.lastUpdated > existing.lastUpdated ||
               scout.stakes > existing.stakes ||
               scout.totalPredictions > existing.totalPredictions;
-              
+
             if (shouldUpdate) {
               await gameDB.scouts.update(scout.name, {
                 stakes: Math.max(scout.stakes, existing.stakes),
@@ -67,11 +67,11 @@ export const handleScoutProfilesUpload = async (jsonData: unknown, mode: UploadM
           scoutsAdded++;
         }
       }
-      
+
       // Process predictions
       for (const prediction of predictionsToImport) {
         const exists = existingPredictions.some(p => p.id === prediction.id);
-        
+
         if (!exists) {
           try {
             await gameDB.predictions.add(prediction);
@@ -86,10 +86,10 @@ export const handleScoutProfilesUpload = async (jsonData: unknown, mode: UploadM
       }
     }
 
-    const message = mode === 'overwrite' 
+    const message = mode === 'overwrite'
       ? `Overwritten with ${scoutsAdded} scouts and ${predictionsAdded} predictions`
       : `Profiles: ${scoutsAdded} new scouts, ${scoutsUpdated} updated scouts, ${predictionsAdded} predictions imported`;
-    
+
     toast.success(message);
   } catch (error) {
     console.error('Error importing scout profiles:', error);

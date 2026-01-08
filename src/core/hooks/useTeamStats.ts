@@ -4,7 +4,7 @@ import {
     loadAllScoutingEntries,
     loadScoutingEntriesByTeamAndEvent,
     loadScoutingEntriesByTeam
-} from "@/core/lib/dexieDB";
+} from "@/core/db/database";
 import type { TeamStats } from "@/types/game-interfaces";
 import type { ScoutingEntryBase } from "@/types/scouting-entry";
 

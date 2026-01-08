@@ -30,60 +30,8 @@ export interface ScoutingDatabaseSchema {
 // Pit Scouting Database
 // ============================================================================
 
-/**
- * Standard FRC drivetrain types
- * Most teams use swerve, but tank and mecanum are also common
- */
-export type DrivetrainType = 'swerve' | 'tank' | 'mecanum' | 'other';
-
-/**
- * Standard FRC programming languages
- * Java is the most common, followed by C++ and Python
- */
-export type ProgrammingLanguage = 'Java' | 'C++' | 'Python' | 'LabVIEW' | 'other';
-
-/**
- * Base interface for pit scouting entries
- * 
- * DESIGN PRINCIPLES:
- * - Framework defines universal fields (photo, weight, drivetrain, language, notes)
- * - Game-specific data stored in `gameData` object (same pattern as ScoutingEntryBase)
- * - ID format: "pit-{teamNumber}-{eventKey}-{timestamp}-{random}" for natural collision detection
- * 
- * EXTENSION EXAMPLE (maneuver-2025):
- * interface PitScoutingEntry2025 extends PitScoutingEntryBase {
- *   gameData: {
- *     groundPickupCapabilities?: {
- *       coralGround: boolean;
- *       algaeGround: boolean;
- *     };
- *     reportedAutoScoring?: {
- *       canScoreL1: boolean;
- *       canScoreL2: boolean;
- *       // etc.
- *     };
- *     reportedTeleopScoring?: object;
- *     reportedEndgame?: object;
- *   };
- * }
- */
-export interface PitScoutingEntryBase {
-  id: string;                    // "pit-{teamNumber}-{eventKey}-{timestamp}-{random}"
-  teamNumber: number;             // Team number (matches ScoutingEntryBase): 3314
-  eventKey: string;               // TBA event key: "2025mrcmp"
-  scoutName: string;              // Scout who recorded this entry
-  timestamp: number;              // Unix milliseconds (not ISO string) for efficient comparison
-  
-  // Universal pit scouting fields (not game-specific)
-  robotPhoto?: string;            // Base64 or URL
-  weight?: number;                // Robot weight in pounds
-  drivetrain?: DrivetrainType;    // Standard FRC drivetrain types
-  programmingLanguage?: ProgrammingLanguage; // Standard FRC programming languages
-  notes?: string;                 // General observations
-  
-  // Game-specific data (defined by game implementation)
-  gameData?: Record<string, unknown>; // Game implementations define typed structure here
-}
+// Entry types are in: src/core/types/pit-scouting.ts
+import type { PitScoutingEntryBase } from '../core/types/pit-scouting';
 
 /**
  * Pit scouting database schema
@@ -150,59 +98,18 @@ export interface TBACacheDatabaseSchema {
 }
 
 // ============================================================================
-// Scout Profile Database (Gamification)
+// Scout Profile Database (Gamification) - Re-exported from gamification module
 // ============================================================================
 
-/**
- * Scout profile for gamification system
- * Tracks prediction accuracy, stakes, and achievements
- */
-export interface Scout {
-  name: string;              // Primary key - matches nav-user sidebar
-  stakes: number;            // Total stakes (predictions + achievements)
-  stakesFromPredictions: number; // Stakes earned only from predictions
-  totalPredictions: number;  // Total predictions made
-  correctPredictions: number; // Correct predictions
-  currentStreak: number;     // Current consecutive correct predictions
-  longestStreak: number;     // Best streak ever achieved
-  createdAt: number;         // Scout creation timestamp
-  lastUpdated: number;       // Last activity timestamp
-}
-
-/**
- * Match prediction for scout gamification
- * Links scouts to their match outcome predictions
- */
-export interface MatchPrediction {
-  id: string;                // Primary key: "prediction_{timestamp}_{random}"
-  scoutName: string;         // Scout who made prediction
-  eventName: string;         // Event name
-  matchNumber: string;       // Match number
-  predictedWinner: 'red' | 'blue'; // Predicted winner alliance
-  actualWinner?: 'red' | 'blue' | 'tie'; // Actual winner (after verification)
-  isCorrect?: boolean;       // Whether prediction was correct
-  pointsAwarded?: number;    // Stakes awarded for this prediction
-  timestamp: number;         // When prediction was made
-  verified: boolean;         // Whether prediction has been verified
-}
-
-/**
- * Scout achievement record
- * Tracks unlocked achievements for gamification
- */
-export interface ScoutAchievement {
-  scoutName: string;         // Scout who unlocked achievement
-  achievementId: string;     // Achievement identifier
-  unlockedAt: number;        // When achievement was unlocked
-  progress?: number;         // Progress towards achievement (0-100)
-}
+// Re-export gamification types from the optional gamification module
+export type { Scout, MatchPrediction, ScoutAchievement } from '@/game-template/gamification';
 
 /**
  * Scout profile database schema
  * Used for gamification features
  */
 export interface ScoutProfileDatabaseSchema {
-  scouts: Scout;
-  predictions: MatchPrediction;
-  scoutAchievements: ScoutAchievement;
+  scouts: import('@/game-template/gamification').Scout;
+  predictions: import('@/game-template/gamification').MatchPrediction;
+  scoutAchievements: import('@/game-template/gamification').ScoutAchievement;
 }

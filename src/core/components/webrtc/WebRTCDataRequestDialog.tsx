@@ -8,7 +8,7 @@ import { Download, Filter, Info } from 'lucide-react';
 import { useWebRTC } from '@/core/contexts/WebRTCContext';
 import { loadScoutingData } from '@/core/lib/scoutingDataUtils';
 import { loadPitScoutingData } from '@/core/lib/pitScoutingUtils';
-import { gameDB } from '@/core/lib/dexieDB';
+import { gamificationDB as gameDB } from '@/game-template/gamification';
 import { applyFilters } from '@/core/lib/dataFiltering';
 import {
   AlertDialog,
@@ -48,7 +48,7 @@ export function WebRTCDataRequestDialog() {
         case 'scouting': {
           let scoutingData = await loadScoutingData();
           originalCount = scoutingData.length;
-          
+
           // Apply filters if provided
           if (requestFilters) {
             console.log('📋 Applying filters to scouting data:', requestFilters);
@@ -57,7 +57,7 @@ export function WebRTCDataRequestDialog() {
             scoutingData = filteredData.entries as typeof scoutingData;
             console.log(`🔍 Filtered: ${originalCount} entries → ${scoutingData.length} entries`);
           }
-          
+
           data = { entries: scoutingData };
           break;
         }
@@ -125,17 +125,17 @@ export function WebRTCDataRequestDialog() {
         default:
           throw new Error(`Unknown data type: ${requestDataType}`);
       }
-      
+
       const dataSize = JSON.stringify(data).length;
       console.log('Scout sending data:', data);
       console.log('Data size:', dataSize, 'characters');
-      
+
       setTransferStatus(`Sending ${getDataTypeLabel(requestDataType)}...`);
       sendData(data, requestDataType);
-      
+
       // Show success
       setTransferStatus(`✅ Sent ${getDataTypeLabel(requestDataType)}`);
-      
+
       setTimeout(() => {
         setTransferStatus('');
         setDataRequested(false);
@@ -154,7 +154,7 @@ export function WebRTCDataRequestDialog() {
   const handleDecline = () => {
     // Send decline message to lead
     context.sendControlMessage({ type: 'request-declined' });
-    
+
     setDataRequested(false);
     setTransferStatus('');
   };
@@ -162,9 +162,9 @@ export function WebRTCDataRequestDialog() {
   // Generate filter description
   const getFilterDescription = () => {
     if (!requestFilters) return 'All data';
-    
+
     const parts: string[] = [];
-    
+
     // Match range
     if (requestFilters.matchRange.type === 'preset' && requestFilters.matchRange.preset !== 'all') {
       const presetLabels = {
@@ -179,12 +179,12 @@ export function WebRTCDataRequestDialog() {
       const end = requestFilters.matchRange.customEnd || '?';
       parts.push(`Matches ${start}-${end}`);
     }
-    
+
     // Teams
     if (!requestFilters.teams.includeAll && requestFilters.teams.selectedTeams.length > 0) {
       parts.push(`${requestFilters.teams.selectedTeams.length} teams`);
     }
-    
+
     return parts.length > 0 ? parts.join(' • ') : 'All data';
   };
 

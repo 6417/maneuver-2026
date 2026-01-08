@@ -19,11 +19,11 @@ import {
 } from "@/core/components/ui/sidebar"
 import { ModeToggle } from "../mode-toggle"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/core/components/ui/select"
 import { convertTeamRole } from "@/core/lib/utils";
 import { useNavigationConfirm } from "@/core/hooks/useNavigationConfirm";
@@ -45,89 +45,89 @@ export function NavMain({
   }[]
 }) {
 
-    const [selected, setSelected] = useState<string | null>(localStorage.getItem("playerStation"));
+  const [selected, setSelected] = useState<string | null>(localStorage.getItem("playerStation"));
 
-    const handlePlayerStationChange = (value : string) => {
-      setSelected(value);
-      localStorage.setItem("playerStation", value);
-    };
+  const handlePlayerStationChange = (value: string) => {
+    setSelected(value);
+    localStorage.setItem("playerStation", value);
+  };
 
-    const { isMobile, setOpenMobile } = useSidebar();
-    const { 
-      confirmNavigation, 
-      handleConfirm, 
-      handleCancel, 
-      isConfirmDialogOpen, 
-      pendingDestinationLabel 
-    } = useNavigationConfirm();
+  const { isMobile, setOpenMobile } = useSidebar();
+  const {
+    confirmNavigation,
+    handleConfirm,
+    handleCancel,
+    isConfirmDialogOpen,
+    pendingDestinationLabel
+  } = useNavigationConfirm();
 
-    // navigate to the destination page
-    const proceedClick = (url?: string) => {
-        const destination = url || "/";
-        const label = url === "/" ? "Home" : "this page";
-        
-        if (confirmNavigation(destination, label)) {
-          // Navigation was allowed immediately
-          if (isMobile) {
-            setOpenMobile(false);
-          }
-        }
-        // If navigation was blocked, confirmNavigation will show the dialog
-    };
+  // navigate to the destination page
+  const proceedClick = (url?: string) => {
+    const destination = url || "/";
+    const label = url === "/" ? "Home" : "this page";
 
-    // Handler for sub-menu clicks
-    const handleSubItemClick = (url: string) => {
-        const label = url.split('/').pop() || "this page";
-        
-        if (confirmNavigation(url, label)) {
-          // Navigation was allowed immediately
-          if (isMobile) {
-            setOpenMobile(false);
-          }
-        }
-        // If navigation was blocked, confirmNavigation will show the dialog
-    };
-
-    // Close sidebar when navigation is confirmed
-    const handleConfirmNavigation = () => {
+    if (confirmNavigation(destination, label)) {
+      // Navigation was allowed immediately
       if (isMobile) {
         setOpenMobile(false);
       }
-      handleConfirm();
-    };
+    }
+    // If navigation was blocked, confirmNavigation will show the dialog
+  };
 
-    useEffect(() => {
-      if (selected) {
-          const element = document.getElementById(selected.toLowerCase().replace(" ", ""));
-          if (element) {
-          (element as HTMLInputElement).checked = true;
-          }
+  // Handler for sub-menu clicks
+  const handleSubItemClick = (url: string) => {
+    const label = url.split('/').pop() || "this page";
+
+    if (confirmNavigation(url, label)) {
+      // Navigation was allowed immediately
+      if (isMobile) {
+        setOpenMobile(false);
       }
-    }, [selected]);
+    }
+    // If navigation was blocked, confirmNavigation will show the dialog
+  };
+
+  // Close sidebar when navigation is confirmed
+  const handleConfirmNavigation = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+    handleConfirm();
+  };
+
+  useEffect(() => {
+    if (selected) {
+      const element = document.getElementById(selected.toLowerCase().replace(" ", ""));
+      if (element) {
+        (element as HTMLInputElement).checked = true;
+      }
+    }
+  }, [selected]);
 
   return (
     <>
       <SidebarGroup>
         <SidebarMenuItem className="flex items-center pb-4">
-              <div className="flex w-full gap-2">
-                  <Select
-                      onValueChange={handlePlayerStationChange}
-                  >
-                      <SelectTrigger className="w-full text-lg font-bold" id="scoutRole" aria-label="Scout Role">
-                          <SelectValue placeholder={convertTeamRole(selected) || "Role"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem className="text-lg" value="lead">Lead</SelectItem>
-                        <SelectItem className="text-lg" value="red-1">Red 1</SelectItem>
-                        <SelectItem className="text-lg" value="red-2">Red 2</SelectItem>
-                        <SelectItem className="text-lg" value="red-3">Red 3</SelectItem>
-                        <SelectItem className="text-lg" value="blue-1">Blue 1</SelectItem>
-                        <SelectItem className="text-lg" value="blue-2">Blue 2</SelectItem>
-                        <SelectItem className="text-lg" value="blue-3">Blue 3</SelectItem>
-                      </SelectContent>
-                  </Select>
-                  <ModeToggle/>
-              </div>
+          <div className="flex w-full gap-2">
+            <Select
+              onValueChange={handlePlayerStationChange}
+            >
+              <SelectTrigger className="w-full h-12 text-lg font-bold" id="scoutRole" aria-label="Scout Role">
+                <SelectValue placeholder={convertTeamRole(selected) || "Role"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem className="text-lg" value="lead">Lead</SelectItem>
+                <SelectItem className="text-lg" value="red-1">Red 1</SelectItem>
+                <SelectItem className="text-lg" value="red-2">Red 2</SelectItem>
+                <SelectItem className="text-lg" value="red-3">Red 3</SelectItem>
+                <SelectItem className="text-lg" value="blue-1">Blue 1</SelectItem>
+                <SelectItem className="text-lg" value="blue-2">Blue 2</SelectItem>
+                <SelectItem className="text-lg" value="blue-3">Blue 3</SelectItem>
+              </SelectContent>
+            </Select>
+            <ModeToggle />
+          </div>
         </SidebarMenuItem>
         <SidebarGroupLabel>Platform</SidebarGroupLabel>
         <SidebarMenu>
@@ -150,7 +150,7 @@ export function NavMain({
               defaultOpen={item.isActive}
               className="group/collapsible"
             >
-              
+
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton tooltip={item.title}>
@@ -177,7 +177,7 @@ export function NavMain({
           ))}
         </SidebarMenu>
       </SidebarGroup>
-      
+
       <NavigationConfirmDialog
         open={isConfirmDialogOpen}
         onConfirm={handleConfirmNavigation}

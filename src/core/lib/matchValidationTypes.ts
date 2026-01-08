@@ -17,7 +17,7 @@ export type DiscrepancySeverity = 'critical' | 'warning' | 'minor' | 'none';
 /**
  * Overall validation status for a match
  */
-export type ValidationStatus = 
+export type ValidationStatus =
   | 'pending'        // Not yet validated
   | 'passed'         // No significant discrepancies
   | 'flagged'        // Discrepancies detected, review recommended
@@ -32,7 +32,7 @@ export type ConfidenceLevel = 'high' | 'medium' | 'low';
 /**
  * Category of data being compared
  */
-export type DataCategory = 
+export type DataCategory =
   | 'auto-coral'
   | 'teleop-coral'
   | 'algae'
@@ -71,11 +71,11 @@ export interface AllianceValidation {
   totalTBAPoints: number;
   scoreDifference: number;
   scorePercentDiff: number;
-  
+
   // Raw data for detailed breakdown (optional, for debugging)
   scoutedData?: ScoutedAllianceData;
   tbaData?: TBAAllianceData;
-  
+
   // Calculation breakdown for debugging score differences
   calculationBreakdown?: {
     scouted: {
@@ -151,25 +151,25 @@ export interface MatchValidationResult {
   matchKey: string;  // TBA match key (e.g., "2025mrcmp_qm1")
   matchNumber: string;
   compLevel: string;  // "qm", "qf", "sf", "f"
-  
+
   // Overall status
   status: ValidationStatus;
   confidence: ConfidenceLevel;
-  
+
   // Alliance results
   redAlliance: AllianceValidation;
   blueAlliance: AllianceValidation;
-  
+
   // Team results
   teams: TeamValidation[];
-  
+
   // Summary
   totalDiscrepancies: number;
   criticalDiscrepancies: number;
   warningDiscrepancies: number;
   flaggedForReview: boolean;
   requiresReScout: boolean;
-  
+
   // Metadata
   validatedAt: number;  // Unix timestamp
   validatedBy?: string;  // Optional validator name
@@ -189,7 +189,7 @@ export interface ValidationThresholds {
   warning: number;   // > this % = warning (e.g., 15%)
   minor: number;     // > this % = minor (e.g., 5%)
   // Below minor = none
-  
+
   // Absolute difference thresholds (for low-count items)
   criticalAbsolute: number;  // > this count = critical (e.g., 5)
   warningAbsolute: number;   // > this count = warning (e.g., 3)
@@ -216,18 +216,18 @@ export interface CategoryThresholds {
 export interface ValidationConfig {
   thresholds: ValidationThresholds;  // Default thresholds
   categoryThresholds?: CategoryThresholds;  // Per-category overrides
-  
+
   // Flags for enabling/disabling specific checks
   checkAutoScoring: boolean;
   checkTeleopScoring: boolean;
   checkEndgame: boolean;
   checkFouls: boolean;
   checkTotalScore: boolean;
-  
+
   // Confidence calculation settings
   minMatchesForHighConfidence: number;  // Scout needs this many matches
   maxDiscrepanciesForHighConfidence: number;
-  
+
   // Re-scouting recommendations
   autoFlagThreshold: number;  // Auto-flag if this many critical discrepancies
   requireReScoutThreshold: number;  // Require re-scout if severity exceeds this
@@ -270,44 +270,44 @@ export const DEFAULT_VALIDATION_CONFIG: ValidationConfig = {
 export interface ScoutedAllianceData {
   alliance: 'red' | 'blue';
   matchNumber: string;
-  eventName: string;
+  eventKey: string;
   teams: string[];  // Team numbers
   scoutNames: string[];
-  
+
   // Auto scoring (totals)
   autoCoralL1: number;
   autoCoralL2: number;
   autoCoralL3: number;
   autoCoralL4: number;
   autoCoralTotal: number;
-  
+
   autoAlgaeNet: number;
   autoAlgaeProcessor: number;
   autoAlgaeTotal: number;
-  
+
   autoMobility: number;  // Count of robots that crossed line
-  
+
   // Teleop scoring (totals)
   teleopCoralL1: number;
   teleopCoralL2: number;
   teleopCoralL3: number;
   teleopCoralL4: number;
   teleopCoralTotal: number;
-  
+
   teleopAlgaeNet: number;
   teleopAlgaeProcessor: number;
   teleopAlgaeTotal: number;
-  
+
   // Endgame (counts)
   deepClimbs: number;
   shallowClimbs: number;
   parks: number;
   climbFails: number;
-  
+
   // Other
   brokeDown: number;
   playedDefense: number;
-  
+
   // Missing data tracking
   missingTeams: string[];  // Teams in match but not scouted
   scoutedTeamsCount: number;
@@ -319,13 +319,13 @@ export interface ScoutedAllianceData {
 export interface TBAAllianceData {
   alliance: 'red' | 'blue';
   teams: string[];  // Team numbers (without "frc" prefix)
-  
+
   // Scores
   totalPoints: number;
   autoPoints: number;
   teleopPoints: number;
   foulPoints: number;
-  
+
   // Auto coral (from grid)
   autoCoralL1: number;
   autoCoralL2: number;
@@ -333,7 +333,7 @@ export interface TBAAllianceData {
   autoCoralL4: number;
   autoCoralTotal: number;
   autoCoralPoints: number;
-  
+
   // Teleop coral (from grid)
   teleopCoralL1: number;
   teleopCoralL2: number;
@@ -341,28 +341,28 @@ export interface TBAAllianceData {
   teleopCoralL4: number;
   teleopCoralTotal: number;
   teleopCoralPoints: number;
-  
+
   // Algae (combined auto + teleop in TBA data)
   algaeNet: number;
   algaeProcessor: number;
   algaeTotal: number;
   algaePoints: number;
-  
+
   // Mobility
   mobilityCount: number;
   mobilityPoints: number;
-  
+
   // Endgame
   deepClimbs: number;
   shallowClimbs: number;
   parks: number;
   endgamePoints: number;
-  
+
   // Bonuses
   autoBonusAchieved: boolean;
   coralBonusAchieved: boolean;
   bargeBonusAchieved: boolean;
-  
+
   // Penalties
   foulCount: number;
   techFoulCount: number;
@@ -396,14 +396,14 @@ export interface ValidationSummary {
   flaggedMatches: number;
   failedMatches: number;
   noTBADataMatches: number;
-  
+
   totalDiscrepancies: number;
   criticalDiscrepancies: number;
   warningDiscrepancies: number;
   minorDiscrepancies: number;
-  
+
   averageConfidence: ConfidenceLevel;
   matchesRequiringReScout: number;
-  
+
   generatedAt: number;
 }

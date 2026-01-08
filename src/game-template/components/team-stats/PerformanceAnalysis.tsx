@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
-import { Button } from "@/core/components/ui/button";
 import { ProgressCard } from "@/core/components/team-stats/ProgressCard";
-import type { TeamStats } from "@/types/game-interfaces";
+import { MatchStatsDialog } from "./MatchStatsDialog";
+import type { TeamStats } from "@/core/types/team-stats";
 import type { RateSectionDefinition, MatchBadgeDefinition } from "@/types/team-stats-display";
 
 interface PerformanceAnalysisProps {
@@ -44,7 +44,7 @@ export function PerformanceAnalysis({
         return (
             <div className="space-y-3 max-h-96 overflow-y-auto">
                 {matchResults.map((match, index: number) => {
-                    const eventName = typeof match['eventName'] === 'string' ? match['eventName'] : null;
+                    const eventKey = typeof match['eventKey'] === 'string' ? match['eventKey'] : null;
                     const matchNumber = String(match['matchNumber'] || '');
                     const alliance = String(match['alliance'] || '');
                     const startPos = typeof match['startPosition'] === 'number' ? match['startPosition'] : null;
@@ -55,65 +55,79 @@ export function PerformanceAnalysis({
                     const comment = typeof match['comment'] === 'string' ? match['comment'] : "";
 
                     return (
-                        <Card key={index} className="overflow-hidden border-muted-foreground/10">
-                            <div className="p-3 space-y-3">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        {eventName && (
-                                            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200 border-none">
-                                                {eventName}
-                                            </Badge>
-                                        )}
-                                        <Badge variant="outline" className="font-mono">M{matchNumber}</Badge>
-                                        <Badge
-                                            variant={alliance.toLowerCase() === "red" ? "destructive" : "default"}
-                                            className={alliance.toLowerCase() === "blue" ? "bg-blue-600" : ""}
-                                        >
-                                            {alliance.toUpperCase()}
+                        <div key={index} className="flex flex-col p-3 border rounded gap-3">
+                            <div className="flex flex-col gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {eventKey && (
+                                        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                            {eventKey}
                                         </Badge>
-                                        {startPos !== null && startPos >= 0 && (
-                                            <Badge variant="secondary" className="bg-secondary/50">Pos {startPos}</Badge>
-                                        )}
-                                    </div>
-
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        {matchBadges.map(badge => {
-                                            const matchValue = match[badge.key];
-                                            if (matchValue === badge.showWhen) {
-                                                return (
-                                                    <Badge key={badge.key} variant={badge.variant} className="text-[10px] h-5 px-1.5">
-                                                        {badge.label}
-                                                    </Badge>
-                                                );
-                                            }
-                                            return null;
-                                        })}
-                                    </div>
+                                    )}
+                                    <Badge variant="outline">Match {matchNumber}</Badge>
+                                    <Badge
+                                        variant={alliance.toLowerCase() === "red" ? "destructive" : "default"}
+                                        className={alliance.toLowerCase() === "blue" ? "bg-blue-600" : ""}
+                                    >
+                                        {alliance}
+                                    </Badge>
+                                    {startPos !== null && startPos >= 0 && (
+                                        <Badge variant="secondary">Pos {startPos}</Badge>
+                                    )}
                                 </div>
-
-                                <div className="flex justify-between items-center py-1">
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-2xl font-black">{totalPoints}</span>
-                                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">pts</span>
-                                    </div>
-                                    <div className="text-xs font-medium text-muted-foreground flex gap-3">
-                                        <span className="bg-blue-500/10 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400">A: {autoPoints}</span>
-                                        <span className="bg-purple-500/10 px-1.5 py-0.5 rounded text-purple-600 dark:text-purple-400">T: {teleopPoints}</span>
-                                        <span className="bg-orange-500/10 px-1.5 py-0.5 rounded text-orange-600 dark:text-orange-400">E: {endgamePoints}</span>
-                                    </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {matchBadges.map(badge => {
+                                        const matchValue = match[badge.key];
+                                        if (matchValue === badge.showWhen) {
+                                            return (
+                                                <Badge key={badge.key} variant={badge.variant}>
+                                                    {badge.label}
+                                                </Badge>
+                                            );
+                                        }
+                                        return null;
+                                    })}
                                 </div>
-
-                                {comment.trim() !== "" && (
-                                    <div className="text-xs text-muted-foreground italic bg-muted/30 p-2 rounded border-l-2 border-muted">
-                                        "{comment}"
-                                    </div>
-                                )}
-
-                                <Button variant="ghost" size="sm" className="w-full h-8 text-xs text-muted-foreground hover:text-foreground mt-1">
-                                    View Full Match Data
-                                </Button>
                             </div>
-                        </Card>
+                            <div className="flex justify-between items-center">
+                                <div className="font-bold text-lg">{totalPoints} pts</div>
+                                <div className="text-sm text-muted-foreground flex gap-2">
+                                    <span className="bg-blue-500/10 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400">A: {autoPoints}</span>
+                                    <span className="bg-purple-500/10 px-1.5 py-0.5 rounded text-purple-600 dark:text-purple-400">T: {teleopPoints}</span>
+                                    <span className="bg-orange-500/10 px-1.5 py-0.5 rounded text-orange-600 dark:text-orange-400">E: {endgamePoints}</span>
+                                </div>
+                            </div>
+                            {comment.trim() !== "" && (
+                                <div className="text-xs text-muted-foreground italic border-t pt-2">
+                                    "{comment}"
+                                </div>
+                            )}
+                            <MatchStatsDialog
+                                matchData={{
+                                    matchNumber,
+                                    teamNumber: typeof match['teamNumber'] === 'number' ? match['teamNumber'] : undefined,
+                                    alliance,
+                                    eventKey: eventKey || '',
+                                    scoutName: typeof match['scoutName'] === 'string' ? match['scoutName'] : undefined,
+                                    startPosition: startPos ?? undefined,
+                                    comment,
+                                    autoPoints: typeof match['autoPoints'] === 'number' ? match['autoPoints'] : 0,
+                                    teleopPoints: typeof match['teleopPoints'] === 'number' ? match['teleopPoints'] : 0,
+                                    endgamePoints: typeof match['endgamePoints'] === 'number' ? match['endgamePoints'] : 0,
+                                    totalPoints: typeof match['totalPoints'] === 'number' ? match['totalPoints'] : 0,
+                                    autoPassedMobilityLine: !!match['autoPassedMobilityLine'],
+                                    climbAttempted: !!match['climbAttempted'] || !!match['climbed'],
+                                    climbSucceeded: !!match['climbed'],
+                                    parkAttempted: !!match['parkAttempted'],
+                                    brokeDown: !!match['brokeDown'],
+                                    playedDefense: !!match['playedDefense'],
+                                    // Pass raw match data for game-specific fields
+                                    ...match
+                                }}
+                                variant="outline"
+                                size="default"
+                                className="w-full mt-2"
+                            />
+                        </div>
                     );
                 })}
             </div>
@@ -127,19 +141,71 @@ export function PerformanceAnalysis({
                     <CardHeader>
                         <CardTitle>Performance Summary</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        {sections.map(section => (
-                            <div key={section.id} className="space-y-4">
-                                {section.rates.map(rate => (
-                                    <ProgressCard
-                                        key={rate.key}
-                                        title={rate.label}
-                                        value={getStatValue(teamStats, rate.key)}
-                                        compareValue={compareStats ? getStatValue(compareStats, rate.key) : undefined}
-                                    />
-                                ))}
+                    <CardContent>
+                        <div className="space-y-6">
+                            {/* Fixed: Points by Phase */}
+                            <div>
+                                <p className="text-sm font-medium mb-3">Points by Phase</p>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded">
+                                        <span className="text-sm font-medium">Auto</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-bold text-blue-600">{getStatValue(teamStats, 'avgAutoPoints').toFixed(1)} pts</span>
+                                            {compareStats && (
+                                                <span className={`text-xs font-medium ${(getStatValue(teamStats, 'avgAutoPoints') - getStatValue(compareStats, 'avgAutoPoints')) > 0 ? 'text-green-600' :
+                                                    (getStatValue(teamStats, 'avgAutoPoints') - getStatValue(compareStats, 'avgAutoPoints')) < 0 ? 'text-red-600' : 'text-gray-500'
+                                                    }`}>
+                                                    ({(getStatValue(teamStats, 'avgAutoPoints') - getStatValue(compareStats, 'avgAutoPoints')) > 0 ? '+' : ''}{(getStatValue(teamStats, 'avgAutoPoints') - getStatValue(compareStats, 'avgAutoPoints')).toFixed(1)})
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 bg-purple-50 dark:bg-purple-950/20 rounded">
+                                        <span className="text-sm font-medium">Teleop</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-bold text-purple-600">{getStatValue(teamStats, 'avgTeleopPoints').toFixed(1)} pts</span>
+                                            {compareStats && (
+                                                <span className={`text-xs font-medium ${(getStatValue(teamStats, 'avgTeleopPoints') - getStatValue(compareStats, 'avgTeleopPoints')) > 0 ? 'text-green-600' :
+                                                    (getStatValue(teamStats, 'avgTeleopPoints') - getStatValue(compareStats, 'avgTeleopPoints')) < 0 ? 'text-red-600' : 'text-gray-500'
+                                                    }`}>
+                                                    ({(getStatValue(teamStats, 'avgTeleopPoints') - getStatValue(compareStats, 'avgTeleopPoints')) > 0 ? '+' : ''}{(getStatValue(teamStats, 'avgTeleopPoints') - getStatValue(compareStats, 'avgTeleopPoints')).toFixed(1)})
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 bg-orange-50 dark:bg-orange-950/20 rounded">
+                                        <span className="text-sm font-medium">Endgame</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-bold text-orange-600">{getStatValue(teamStats, 'avgEndgamePoints').toFixed(1)} pts</span>
+                                            {compareStats && (
+                                                <span className={`text-xs font-medium ${(getStatValue(teamStats, 'avgEndgamePoints') - getStatValue(compareStats, 'avgEndgamePoints')) > 0 ? 'text-green-600' :
+                                                    (getStatValue(teamStats, 'avgEndgamePoints') - getStatValue(compareStats, 'avgEndgamePoints')) < 0 ? 'text-red-600' : 'text-gray-500'
+                                                    }`}>
+                                                    ({(getStatValue(teamStats, 'avgEndgamePoints') - getStatValue(compareStats, 'avgEndgamePoints')) > 0 ? '+' : ''}{(getStatValue(teamStats, 'avgEndgamePoints') - getStatValue(compareStats, 'avgEndgamePoints')).toFixed(1)})
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        ))}
+
+                            {/* Configurable: Rate sections (e.g., Reliability Metrics) */}
+                            {sections.map(section => (
+                                <div key={section.id}>
+                                    <p className="text-sm font-medium mb-3">{section.title}</p>
+                                    <div className="space-y-3">
+                                        {section.rates.map(rate => (
+                                            <ProgressCard
+                                                key={rate.key}
+                                                title={rate.label}
+                                                value={getStatValue(teamStats, rate.key)}
+                                                compareValue={compareStats ? getStatValue(compareStats, rate.key) : undefined}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
 

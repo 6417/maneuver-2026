@@ -18,12 +18,12 @@ export interface ScoutAchievement {
   progress?: number; // For tracking progress toward achievement
 }
 
-export type AchievementCategory = 
-  | 'accuracy' 
-  | 'volume' 
-  | 'streaks' 
-  | 'special' 
-  | 'social' 
+export type AchievementCategory =
+  | 'accuracy'
+  | 'volume'
+  | 'streaks'
+  | 'special'
+  | 'social'
   | 'time'
   | 'improvement';
 
@@ -36,8 +36,8 @@ export interface AchievementRequirement {
   customCheck?: (scout: Scout) => boolean;
 }
 
-// Import scout type
-import type { Scout } from './dexieDB';
+// Import scout type from gamification module
+import type { Scout } from '@/game-template/gamification';
 
 // Achievement definitions
 export const ACHIEVEMENT_DEFINITIONS: Achievement[] = [
@@ -111,8 +111,8 @@ export const ACHIEVEMENT_DEFINITIONS: Achievement[] = [
     icon: '🎯',
     category: 'accuracy',
     tier: 'bronze',
-    requirements: { 
-      type: 'custom', 
+    requirements: {
+      type: 'custom',
       value: 60,
       customCheck: (scout) => scout.totalPredictions >= 10 && (scout.correctPredictions / scout.totalPredictions * 100) >= 60
     },
@@ -125,8 +125,8 @@ export const ACHIEVEMENT_DEFINITIONS: Achievement[] = [
     icon: '🏹',
     category: 'accuracy',
     tier: 'silver',
-    requirements: { 
-      type: 'custom', 
+    requirements: {
+      type: 'custom',
       value: 70,
       customCheck: (scout) => scout.totalPredictions >= 20 && (scout.correctPredictions / scout.totalPredictions * 100) >= 70
     },
@@ -139,8 +139,8 @@ export const ACHIEVEMENT_DEFINITIONS: Achievement[] = [
     icon: '🔮',
     category: 'accuracy',
     tier: 'gold',
-    requirements: { 
-      type: 'custom', 
+    requirements: {
+      type: 'custom',
       value: 80,
       customCheck: (scout) => scout.totalPredictions >= 30 && (scout.correctPredictions / scout.totalPredictions * 100) >= 80
     },
@@ -153,8 +153,8 @@ export const ACHIEVEMENT_DEFINITIONS: Achievement[] = [
     icon: '✨',
     category: 'accuracy',
     tier: 'platinum',
-    requirements: { 
-      type: 'custom', 
+    requirements: {
+      type: 'custom',
       value: 85,
       customCheck: (scout) => scout.totalPredictions >= 50 && (scout.correctPredictions / scout.totalPredictions * 100) >= 85
     },
@@ -263,7 +263,7 @@ export const ACHIEVEMENT_DEFINITIONS: Achievement[] = [
     icon: '💯',
     category: 'special',
     tier: 'gold',
-    requirements: { 
+    requirements: {
       type: 'minimum',
       value: 5,
       property: 'longestStreak'
@@ -278,7 +278,7 @@ export const ACHIEVEMENT_DEFINITIONS: Achievement[] = [
     icon: '�',
     category: 'special',
     tier: 'platinum',
-    requirements: { 
+    requirements: {
       type: 'minimum',
       value: 1000,
       property: 'stakesFromPredictions'
@@ -293,7 +293,7 @@ export const ACHIEVEMENT_DEFINITIONS: Achievement[] = [
     icon: '🎯',
     category: 'special',
     tier: 'silver',
-    requirements: { 
+    requirements: {
       type: 'custom',
       value: 75,
       customCheck: (scout) => scout.totalPredictions >= 40 && (scout.correctPredictions / scout.totalPredictions * 100) >= 75
@@ -306,20 +306,20 @@ export const ACHIEVEMENT_DEFINITIONS: Achievement[] = [
 // Helper functions for achievement checking
 export const checkAchievement = (achievement: Achievement, scout: Scout): boolean => {
   const { requirements } = achievement;
-  
+
   switch (requirements.type) {
     case 'minimum':
       if (requirements.property && requirements.property in scout) {
         return (scout[requirements.property as keyof Scout] as number) >= requirements.value;
       }
       return false;
-      
+
     case 'exact':
       if (requirements.property && requirements.property in scout) {
         return (scout[requirements.property as keyof Scout] as number) === requirements.value;
       }
       return false;
-      
+
     case 'percentage':
       if (requirements.property && requirements.property in scout) {
         const value = scout[requirements.property as keyof Scout] as number;
@@ -327,14 +327,14 @@ export const checkAchievement = (achievement: Achievement, scout: Scout): boolea
         return total > 0 && (value / total * 100) >= requirements.value;
       }
       return false;
-      
+
     case 'custom':
       return requirements.customCheck ? requirements.customCheck(scout) : false;
-      
+
     case 'special':
       // Special achievements need custom logic in the achievement system
       return false;
-      
+
     default:
       return false;
   }
@@ -342,7 +342,7 @@ export const checkAchievement = (achievement: Achievement, scout: Scout): boolea
 
 export const getAchievementProgress = (achievement: Achievement, scout: Scout): number => {
   const { requirements } = achievement;
-  
+
   switch (requirements.type) {
     case 'minimum':
     case 'exact':
@@ -351,7 +351,7 @@ export const getAchievementProgress = (achievement: Achievement, scout: Scout): 
         return Math.min(100, (current / requirements.value) * 100);
       }
       return 0;
-      
+
     case 'percentage':
       if (requirements.property && requirements.property in scout) {
         const value = scout[requirements.property as keyof Scout] as number;
@@ -361,13 +361,13 @@ export const getAchievementProgress = (achievement: Achievement, scout: Scout): 
         return Math.min(100, (currentPercentage / requirements.value) * 100);
       }
       return 0;
-      
+
     case 'custom':
       // Custom achievements can define their own progress calculation
       if (checkAchievement(achievement, scout)) return 100;
       // For custom achievements, we'll need specific progress logic
       return 0;
-      
+
     default:
       return 0;
   }
@@ -410,7 +410,7 @@ export const ACHIEVEMENT_TIERS = {
 // Get achievements grouped by category
 export const getAchievementsByCategory = (): { [key: string]: Achievement[] } => {
   const categories: { [key: string]: Achievement[] } = {};
-  
+
   for (const achievement of ACHIEVEMENT_DEFINITIONS) {
     if (!categories[achievement.category]) {
       categories[achievement.category] = [];

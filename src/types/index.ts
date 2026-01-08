@@ -1,23 +1,29 @@
 /**
  * Core type exports
  * All year-agnostic types that define the framework's data structures.
+ * 
+ * SINGLE SOURCE OF TRUTH: All types are defined in src/core/types/
+ * This barrel file provides convenient imports via @/types
  */
 
-// Scouting entry types (from scouting-entry.ts and core/types/scouting-entry.ts)
+// Scouting entry types (from core/types/scouting-entry.ts - SINGLE SOURCE)
 export type {
   ScoutingEntryBase,
-} from './scouting-entry';
-
-export type {
   ScoutingDataExport,
   ImportResult,
   DBStats,
   FilterOptions,
   QueryFilters,
-  PitScoutingEntry,
+} from '../core/types/scouting-entry';
+
+// Pit scouting types (from core/types/pit-scouting.ts - SINGLE SOURCE)
+export type {
+  PitScoutingEntryBase,
   PitScoutingData,
   PitScoutingStats,
-} from '../core/types/scouting-entry';
+  DrivetrainType,
+  ProgrammingLanguage,
+} from '../core/types/pit-scouting';
 
 // Strategy and gamification types (from core/types/strategy.ts)
 export type {
@@ -46,7 +52,6 @@ export type {
   MatchValidationResult,
   AllianceValidation as GameAllianceValidation,
   Discrepancy as GameDiscrepancy,
-  TeamStats as GameTeamStats,
   AdvancedTeamStats,
   PredictionSystem,
   ValidationConfig as GameValidationConfig,
@@ -55,12 +60,9 @@ export type {
   DataTransformation,
 } from './game-interfaces';
 
-// Database schema types (from database.ts)
+// Database schema types (from database.ts) - only schema types, entry types from pit-scouting
 export type {
   ScoutingDatabaseSchema,
-  DrivetrainType,
-  ProgrammingLanguage,
-  PitScoutingEntryBase,
   PitScoutingDatabaseSchema,
   CachedTBAMatch,
   TBACacheMetadata,
@@ -89,10 +91,11 @@ export type {
   ValidationResultDB as ValidationResult,
 } from './validation';
 
-// Strategy types (from strategy.ts)
+// TeamStats types (from core/types/team-stats.ts - SINGLE SOURCE)
 export type {
   TeamStats,
-} from './strategy';
+  TeamStatsWithId,
+} from '../core/types/team-stats';
 
 // Team stats display configuration types (from team-stats-display.ts)
 export type {

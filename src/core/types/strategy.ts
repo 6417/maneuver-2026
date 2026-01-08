@@ -48,10 +48,10 @@ export interface MatchPrediction {
   scoutName: string;
 
   /** Event key (e.g., "2025mrcmp") */
-  eventName: string;
+  eventKey: string;
 
-  /** Match number (e.g., "qm42") */
-  matchNumber: string;
+  /** Match number (numeric) */
+  matchNumber: number;
 
   /** Predicted winning alliance */
   predictedWinner: 'red' | 'blue';
@@ -224,7 +224,7 @@ export interface StrategyConfig {
 
 export interface TeamData {
   teamNumber: number;
-  eventName: string;
+  eventKey: string;
   matchCount: number;
   [key: string]: string | number;
 }

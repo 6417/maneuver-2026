@@ -51,7 +51,6 @@ const TeleopScoringPage = () => {
     setScoringActions((prev: any) => [...prev, newAction]);
     // Add to undo history
     setUndoHistory((prev: any) => [...prev, { type: 'action', data: newAction }]);
-    toast.success("Action recorded");
   };
 
   const updateRobotStatus = (updates: Partial<any>) => {
@@ -59,7 +58,6 @@ const TeleopScoringPage = () => {
     setUndoHistory((history: any) => [...history, { type: 'status', data: robotStatus }]);
     // Update the status
     setRobotStatus((prev: any) => ({ ...prev, ...updates }));
-    toast.success("Status updated");
   };
 
   const undoLastAction = () => {
@@ -67,9 +65,9 @@ const TeleopScoringPage = () => {
       toast.error("No changes to undo");
       return;
     }
-    
+
     const lastChange = undoHistory[undoHistory.length - 1];
-    
+
     if (lastChange.type === 'action') {
       // Undo scoring action
       setScoringActions((prev: any) => prev.slice(0, -1));
@@ -79,7 +77,7 @@ const TeleopScoringPage = () => {
       setRobotStatus(lastChange.data);
       toast.success("Undid status change");
     }
-    
+
     // Remove from undo history
     setUndoHistory((prev: any) => prev.slice(0, -1));
   };
@@ -114,10 +112,10 @@ const TeleopScoringPage = () => {
         <h1 className="text-2xl font-bold pb-4">Teleoperated</h1>
       </div>
       <div className="flex flex-col-reverse lg:flex-row items-start gap-0 lg:gap-6 max-w-7xl w-full h-full min-h-0">
-        
+
         {/* Main Scoring Section */}
         <div className="w-full lg:flex-1 space-y-4 min-h-0 overflow-y-auto">
-          
+
           {/* Game-Specific Scoring Sections */}
           <ScoringSections
             phase="teleop"

@@ -20,7 +20,7 @@ export const clearAllStrategies = (setActiveTab: (tab: string) => void, activeTa
     }, 50);
 };
 
-export const saveAllStrategyCanvases = (matchNumber: string, selectedTeams: string[], fieldImagePath?: string) => {
+export const saveAllStrategyCanvases = (matchNumber: string | number, selectedTeams: (number | null)[], fieldImagePath?: string) => {
     // Add a small delay to ensure all canvases are rendered
     setTimeout(() => {
         // Try to get from localStorage first since it's more reliable
@@ -137,8 +137,8 @@ export const saveAllStrategyCanvases = (matchNumber: string, selectedTeams: stri
                 // Add team information at the top
                 const teamFontSize = Math.round(16 * scaleFactor);
                 ctx.font = `bold ${teamFontSize}px Arial`;
-                const blueTeams = selectedTeams.slice(3, 6).filter(Boolean); // Blue teams (originally index 3-5)
-                const redTeams = selectedTeams.slice(0, 3).filter(Boolean);  // Red teams (originally index 0-2)
+                const blueTeams = selectedTeams.slice(3, 6).filter(Boolean).map(t => t?.toString()); // Blue teams (originally index 3-5)
+                const redTeams = selectedTeams.slice(0, 3).filter(Boolean).map(t => t?.toString());  // Red teams (originally index 0-2)
 
                 if (blueTeams.length > 0 || redTeams.length > 0) {
                     const teamInfoY = matchNumber ? Math.round(50 * scaleFactor) : Math.round(20 * scaleFactor);

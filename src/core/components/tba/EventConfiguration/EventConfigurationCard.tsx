@@ -4,7 +4,7 @@ import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
 import { Alert, AlertDescription } from "@/core/components/ui/alert";
 import { EventNameSelector } from "@/core/components/GameStartComponents/EventNameSelector";
-import { 
+import {
   Calendar,
   Trash2,
   AlertTriangle,
@@ -52,8 +52,8 @@ export const EventConfigurationCard: React.FC<EventConfigurationCardProps> = ({
           <div className="space-y-2">
             <label className="text-sm font-medium">Event Key</label>
             <EventNameSelector
-              currentEventName={eventKey}
-              onEventNameChange={setEventKey}
+              currentEventKey={eventKey}
+              onEventKeyChange={setEventKey}
               showCustomEvents={false}
             />
             <p className="text-xs text-muted-foreground">

@@ -1,10 +1,11 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
-import { clearAllScoutingData, clearGameData } from "@/core/lib/dexieDB";
+import { clearAllScoutingData } from "@/core/db/database";
+import { clearGamificationData as clearGameData } from "@/game-template/gamification";
 import { clearAllPitScoutingData } from "@/core/lib/pitScoutingUtils";
 
 export const useDataCleaning = (
-  refreshData: () => Promise<void>, 
+  refreshData: () => Promise<void>,
   resetStats: () => void,
   updateMatchData?: (matchData: string | null) => void
 ) => {
@@ -12,7 +13,7 @@ export const useDataCleaning = (
     try {
       await clearAllScoutingData();
       localStorage.setItem("scoutingData", JSON.stringify({ data: [] }));
-      
+
       await refreshData();
       toast.success("Cleared all scouting data");
     } catch (error) {
@@ -37,13 +38,13 @@ export const useDataCleaning = (
   const handleClearScoutGameData = useCallback(async () => {
     try {
       await clearGameData();
-      
+
       localStorage.removeItem("scoutsList");
       localStorage.removeItem("currentScout");
       localStorage.removeItem("scoutName");
-      
+
       window.dispatchEvent(new CustomEvent('scoutDataCleared'));
-      
+
       await refreshData();
       toast.success("Cleared all scout profile data");
       console.log("ClearDataPage - Scout profile data cleared successfully");
@@ -64,25 +65,25 @@ export const useDataCleaning = (
   const handleClearApiData = useCallback(() => {
     try {
       const allKeys = Object.keys(localStorage);
-      const apiKeys = allKeys.filter(key => 
-        key.includes('tba_') || 
+      const apiKeys = allKeys.filter(key =>
+        key.includes('tba_') ||
         key.startsWith('tba_') ||
-        key.includes('nexus_') || 
+        key.includes('nexus_') ||
         key.startsWith('nexus_') ||
         key === 'matchData' ||
         key === 'eventsList' ||
-        key === 'eventName' ||
+        key === 'eventKey' ||
         key.includes('matchResults_') ||
         key.includes('stakesAwarded_') ||
         key.includes('pit_assignments_')
       );
-      
+
       console.log('Clearing API data keys:', apiKeys);
-      
+
       apiKeys.forEach(key => {
         localStorage.removeItem(key);
       });
-      
+
       refreshData();
       toast.success(`Cleared all API data (${apiKeys.length} items)`);
     } catch (error) {
@@ -98,20 +99,20 @@ export const useDataCleaning = (
       await clearAllScoutingData();
       await clearAllPitScoutingData();
       await clearGameData();
-      
+
       localStorage.clear();
-      
+
       console.log("localStorage after clearing:", Object.keys(localStorage));
-      
+
       resetStats();
-      
+
       window.dispatchEvent(new CustomEvent('scoutDataCleared'));
       window.dispatchEvent(new CustomEvent('allDataCleared'));
-      
+
       toast.success("Cleared all data - complete clean slate", {
         description: "All stored data has been permanently removed from this device."
       });
-      
+
     } catch (error) {
       console.error("Error clearing all data:", error);
       toast.error("Failed to clear all data");

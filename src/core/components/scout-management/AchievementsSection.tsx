@@ -32,11 +32,11 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ scoutN
     setBackfillLoading(true);
     try {
       await backfillAchievementsForAllScouts();
-      
+
       // Reload achievement data
       const achievements = await getScoutAchievements(scoutName);
       const achievementStats = await getAchievementStats(scoutName);
-      
+
       setUnlocked(achievements.unlocked);
       setAvailable(achievements.available);
       setStats(achievementStats);
@@ -50,12 +50,12 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ scoutN
   useEffect(() => {
     const loadAchievements = async () => {
       if (!scoutName) return;
-      
+
       setLoading(true);
       try {
         const achievements = await getScoutAchievements(scoutName);
         const achievementStats = await getAchievementStats(scoutName);
-        
+
         setUnlocked(achievements.unlocked);
         setAvailable(achievements.available);
         setStats(achievementStats);
@@ -130,34 +130,48 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ scoutN
   };
 
   available.forEach(achievement => {
-    if (!availableByCategory[achievement.category]) {
-      availableByCategory[achievement.category] = [];
+    const category = achievement.category;
+    if (!availableByCategory[category]) {
+      availableByCategory[category] = [];
     }
-    availableByCategory[achievement.category].push(achievement);
+    const categoryArray = availableByCategory[category];
+    if (categoryArray) {
+      categoryArray.push(achievement);
+    }
   });
 
   unlocked.forEach(achievement => {
-    if (!unlockedByCategory[achievement.category]) {
-      unlockedByCategory[achievement.category] = [];
+    const category = achievement.category;
+    if (!unlockedByCategory[category]) {
+      unlockedByCategory[category] = [];
     }
-    unlockedByCategory[achievement.category].push(achievement);
+    const categoryArray = unlockedByCategory[category];
+    if (categoryArray) {
+      categoryArray.push(achievement);
+    }
   });
 
   // Sort achievements by tier (Bronze first) then by requirements value for consistency
   Object.keys(availableByCategory).forEach(category => {
-    availableByCategory[category].sort((a, b) => {
-      const tierDiff = getTierOrder(a.tier) - getTierOrder(b.tier);
-      if (tierDiff !== 0) return tierDiff;
-      return a.requirements.value - b.requirements.value;
-    });
+    const categoryArray = availableByCategory[category];
+    if (categoryArray) {
+      categoryArray.sort((a, b) => {
+        const tierDiff = getTierOrder(a.tier) - getTierOrder(b.tier);
+        if (tierDiff !== 0) return tierDiff;
+        return a.requirements.value - b.requirements.value;
+      });
+    }
   });
 
   Object.keys(unlockedByCategory).forEach(category => {
-    unlockedByCategory[category].sort((a, b) => {
-      const tierDiff = getTierOrder(a.tier) - getTierOrder(b.tier);
-      if (tierDiff !== 0) return tierDiff;
-      return a.requirements.value - b.requirements.value;
-    });
+    const categoryArray = unlockedByCategory[category];
+    if (categoryArray) {
+      categoryArray.sort((a, b) => {
+        const tierDiff = getTierOrder(a.tier) - getTierOrder(b.tier);
+        if (tierDiff !== 0) return tierDiff;
+        return a.requirements.value - b.requirements.value;
+      });
+    }
   });
 
   return (
@@ -183,9 +197,9 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ scoutN
               </div>
               {/* Check Achievements Button - Inline on larger screens */}
               <div className="lg:flex-shrink-0">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleBackfillAchievements}
                   disabled={backfillLoading}
                   className="w-full lg:w-auto flex items-center justify-center gap-2"
@@ -199,10 +213,10 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ scoutN
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs 
-          value={activeTab} 
-          onValueChange={setActiveTab} 
-          className="w-full" 
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
           enableSwipe={true}
         >
           <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-6">
@@ -222,7 +236,7 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ scoutN
               const Icon = getCategoryIcon(category);
               const categoryUnlocked = unlockedByCategory[category] || [];
               const categoryAvailable = availableByCategory[category] || [];
-              
+
               if (categoryUnlocked.length === 0 && categoryAvailable.length === 0) {
                 return null;
               }

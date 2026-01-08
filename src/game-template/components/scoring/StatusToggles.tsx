@@ -5,55 +5,42 @@
  * during autonomous, teleop, and endgame. Teams customize this to match their
  * game's boolean/toggle-based tracking needs.
  * 
+ * IMPORTANT: Field names here MUST match transformation.ts!
+ * When you customize the toggles, update transformation.ts to handle them.
+ * 
+ * PLACEHOLDER FIELD MAPPING (current → saved to database):
+ * =========================================================
+ * 
+ * Auto Phase:
+ *   - autoToggle → gameData.auto.autoToggle
+ * 
+ * Teleop Phase:
+ *   - teleopToggle → gameData.teleop.teleopToggle
+ * 
+ * Endgame Phase:
+ *   - option1, option2, option3 → gameData.endgame.option1/2/3 (single selection)
+ *   - toggle1, toggle2 → gameData.endgame.toggle1/2 (multiple selection)
+ * 
  * HOW TO CUSTOMIZE FOR YOUR GAME YEAR:
  * ====================================
  * 
- * 1. Define phase-specific toggles (auto line crossing, defense, climbing, issues)
+ * 1. Define phase-specific toggles (line crossing, defense, climbing, issues)
  * 2. Create toggle buttons for each status option
- * 3. Update status via onStatusUpdate callback
- * 4. Show/hide sections based on current phase
- * 5. Group related toggles (e.g., "Climbing" and "Issues" sections in 2025)
+ * 3. Update status via onStatusUpdate callback with consistent field names
+ * 4. UPDATE transformation.ts to initialize defaults for your field names
+ * 5. Group related toggles (e.g., "Climbing" and "Issues" sections)
  * 
- * EXAMPLE IMPLEMENTATIONS:
+ * EXAMPLE: 2025 Reefscape Implementation
  * 
- * For 2025 Reefscape Endgame:
- * - Climbing: "Shallow Climb Attempted", "Deep Climb Attempted", "Park Attempted"
- * - Issues: "Climb Failed", "Broke Down"
+ * StatusToggles fields:
+ *   - Auto: leftStartingZone
+ *   - Teleop: playedDefense
+ *   - Endgame: shallowClimbAttempted, deepClimbAttempted, parkAttempted, climbFailed, brokeDown
  * 
- * For 2025 Reefscape Auto:
- * - "Left Starting Zone" toggle
- * 
- * For 2025 Reefscape Teleop:
- * - "Played Defense" toggle
- * 
- * For 2024 Crescendo:
- * - Auto: "Left Auto Line" toggle
- * - Teleop: "Played Defense" toggle
- * - Endgame: "Parked", "Climbed", "Harmony", "Spotlit", "Trap Scored"
- * 
- * INTERFACE:
- * - phase: 'auto' | 'teleop' | 'endgame' - Current match phase
- * - status: Partial status object with current values
- * - onStatusUpdate: (updates: Partial<any>) => void - Callback to update status
- * 
- * DATA STORAGE:
- * Status is stored as an object in the scouting entry:
- * {
- *   // Auto
- *   leftStartingZone: true,
- *   
- *   // Teleop
- *   playedDefense: false,
- *   
- *   // Endgame - Climbing
- *   shallowClimbAttempted: true,
- *   deepClimbAttempted: false,
- *   parkAttempted: false,
- *   
- *   // Endgame - Issues
- *   climbFailed: false,
- *   brokeDown: false
- * }
+ * transformation.ts matching defaults:
+ *   - auto: { leftStartingZone: false }
+ *   - teleop: { playedDefense: false }
+ *   - endgame: { shallowClimbAttempted: false, deepClimbAttempted: false, ... }
  */
 
 import { Card, CardContent } from "@/core/components/ui/card";
@@ -105,8 +92,8 @@ export function StatusToggles({
             </p>
           </div>
           <Button
-            onClick={() => onStatusUpdate({ 
-              autoToggle: !status?.autoToggle 
+            onClick={() => onStatusUpdate({
+              autoToggle: !status?.autoToggle
             })}
             variant={status?.autoToggle ? "default" : "outline"}
             className="w-full"
@@ -127,8 +114,8 @@ export function StatusToggles({
           </div>
           <div className="space-y-2">
             <Button
-              onClick={() => onStatusUpdate({ 
-                teleopToggle: !status?.teleopToggle 
+              onClick={() => onStatusUpdate({
+                teleopToggle: !status?.teleopToggle
               })}
               variant={status?.teleopToggle ? "default" : "outline"}
               className="w-full"
@@ -158,7 +145,7 @@ export function StatusToggles({
                   key={key}
                   onClick={() => {
                     // Clear all options in this group, then set the selected one
-                    onStatusUpdate({ 
+                    onStatusUpdate({
                       option1: false,
                       option2: false,
                       option3: false,

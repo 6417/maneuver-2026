@@ -27,7 +27,7 @@ import {
 import {
   STAKE_VALUES,
   updateScoutWithPredictionResult,
-} from '@/core/db/scoutGameUtils';
+} from '@/core/lib/scoutGameUtils';
 
 interface MatchSelectorProps {
   matches: TBAMatch[];
@@ -86,14 +86,14 @@ export const MatchSelector: React.FC<MatchSelectorProps> = ({
         if (!match) continue;
 
         const matchResult = getMatchResult(match);
-        const matchNumber = match.match_number.toString();
+        const matchNumber = match.match_number;
 
         // Get all predictions for this match
         const predictions = await getAllPredictionsForMatch(currentEventKey, matchNumber);
-        
+
         // Filter out already verified predictions to prevent double awarding
         const unverifiedPredictions = predictions.filter(p => !p.verified);
-        
+
         let correctPredictions = 0;
         let totalStakesAwarded = 0;
         const skippedVerified = predictions.length - unverifiedPredictions.length;
@@ -101,7 +101,7 @@ export const MatchSelector: React.FC<MatchSelectorProps> = ({
         // Process each unverified prediction
         for (const prediction of unverifiedPredictions) {
           const isCorrect = prediction.predictedWinner === matchResult.winner;
-          
+
           if (isCorrect) {
             correctPredictions++;
           }
@@ -114,7 +114,7 @@ export const MatchSelector: React.FC<MatchSelectorProps> = ({
             currentEventKey,
             matchNumber
           );
-          
+
           totalStakesAwarded += stakesAwarded;
 
           // Mark this prediction as verified to prevent future double-processing
@@ -136,7 +136,7 @@ export const MatchSelector: React.FC<MatchSelectorProps> = ({
       }
 
       onProcessingComplete(results);
-      
+
       const totalCorrect = results.reduce((sum, r) => sum + r.correctPredictions, 0);
       const totalPredictions = results.reduce((sum, r) => sum + r.predictionsCount, 0);
       const totalStakes = results.reduce((sum, r) => sum + r.stakesAwarded, 0);
@@ -185,7 +185,7 @@ export const MatchSelector: React.FC<MatchSelectorProps> = ({
             <Button variant="outline" size="sm" onClick={clearSelection} className="px-4 flex-1 sm:flex-none">
               Clear
             </Button>
-            <Button 
+            <Button
               onClick={processSelectedMatches}
               disabled={selectedMatches.size === 0 || processing}
               className="bg-green-600 hover:bg-green-700 text-white px-4 w-full sm:w-auto"
@@ -207,15 +207,14 @@ export const MatchSelector: React.FC<MatchSelectorProps> = ({
           {matches.map((match) => {
             const result = getMatchResult(match);
             const isSelected = selectedMatches.has(match.key);
-            
+
             return (
               <div
                 key={match.key}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                  isSelected 
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20' 
-                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
-                }`}
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${isSelected
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20'
+                  : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                  }`}
                 onClick={(e) => {
                   // Don't trigger if the click came from the checkbox itself
                   if ((e.target as HTMLElement).closest('[role="checkbox"]')) {
@@ -239,11 +238,11 @@ export const MatchSelector: React.FC<MatchSelectorProps> = ({
                         {formatMatchKey(match)}
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
                       <div className="flex items-center justify-between sm:justify-start gap-2 flex-wrap">
                         <div className="flex items-center gap-2">
-                          <Badge 
+                          <Badge
                             variant={result.winner === 'red' ? 'destructive' : 'default'}
                             className={`${result.winner === 'red' ? 'bg-red-500' : 'bg-blue-500'} text-white`}
                           >
@@ -257,7 +256,7 @@ export const MatchSelector: React.FC<MatchSelectorProps> = ({
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="hidden sm:block text-xs text-gray-500 font-mono text-right">
                     {formatMatchKey(match)}
                   </div>

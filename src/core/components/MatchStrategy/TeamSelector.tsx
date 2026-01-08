@@ -4,9 +4,9 @@ interface TeamSelectorProps {
     index: number;
     label: string;
     labelColor: string;
-    value: string;
-    availableTeams: string[];
-    onValueChange: (value: string) => void;
+    value: number | null;
+    availableTeams: number[];
+    onValueChange: (value: number | null) => void;
 }
 
 export const TeamSelector = ({
@@ -16,19 +16,25 @@ export const TeamSelector = ({
     onValueChange
 }: TeamSelectorProps) => {
     // Add "none" option to the beginning of the available teams
-    const teamsWithNone = ["none", ...availableTeams];
+    const options = ["none", ...availableTeams.map(String)];
 
-    const displayFormat = (value: string) => {
-        if (value === "none") return "No team";
-        return value ? `Team ${value}` : "Select team";
+    const displayFormat = (val: string) => {
+        if (val === "none") return "No team";
+        return val ? `Team ${val}` : "Select team";
     };
 
     return (
         <GenericSelector
             label={label}
-            value={value || "none"}
-            availableOptions={teamsWithNone}
-            onValueChange={onValueChange}
+            value={value === null ? "none" : String(value)}
+            availableOptions={options}
+            onValueChange={(newVal) => {
+                if (newVal === "none") {
+                    onValueChange(null);
+                } else {
+                    onValueChange(Number(newVal));
+                }
+            }}
             placeholder="Select team"
             displayFormat={displayFormat}
         />

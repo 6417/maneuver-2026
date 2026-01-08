@@ -4,7 +4,7 @@ import { Badge } from "@/core/components/ui/badge";
 import { CheckCircle, XCircle, Database, Calendar, Users, MapPin, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { getStoredPitAddresses, getStoredPitData, getStoredNexusTeams, getAllStoredEventTeams } from '@/core/lib/tba';
 import { getCachedTBAEventMatches, getCacheExpiration } from '@/core/lib/tbaCache';
-import { gameDB } from '@/core/lib/dexieDB';
+import { gamificationDB as gameDB } from '@/game-template/gamification';
 
 interface DataStatusCardProps {
   eventKey: string;
@@ -42,7 +42,7 @@ export const DataStatusCard: React.FC<DataStatusCardProps> = ({
       try {
         const matches = await getCachedTBAEventMatches(eventKey, true); // Include expired
         const expiration = await getCacheExpiration(eventKey);
-        
+
         setValidationData({
           count: matches.length,
           isExpired: expiration.isExpired
@@ -67,14 +67,14 @@ export const DataStatusCard: React.FC<DataStatusCardProps> = ({
       try {
         // Get all predictions for this event that are verified
         const allPredictions = await gameDB.predictions
-          .where('eventName')
+          .where('eventKey')
           .equals(eventKey)
           .and(p => p.verified === true)
           .toArray();
-        
+
         // Count unique matches
         const uniqueMatches = new Set(allPredictions.map(p => p.matchNumber));
-        
+
         setVerifiedPredictions({
           count: allPredictions.length,
           matchCount: uniqueMatches.size
@@ -109,21 +109,21 @@ export const DataStatusCard: React.FC<DataStatusCardProps> = ({
 
   // Check various data sources
   const hasMatchData = localStorage.getItem('matchData') !== null && localStorage.getItem('matchData') !== '';
-  
+
   // Use verified predictions from database instead of localStorage
   const hasVerifiedPredictions = verifiedPredictions.count > 0;
   const verifiedMatchCount = verifiedPredictions.matchCount;
-  
+
   // Check TBA teams
   const tbaTeams = getAllStoredEventTeams();
   const hasTBATeams = tbaTeams[eventKey] && tbaTeams[eventKey].length > 0;
   const tbaTeamCount = hasTBATeams ? (tbaTeams[eventKey]?.length || 0) : 0;
-  
+
   // Check Nexus teams
   const nexusTeams = getStoredNexusTeams(eventKey);
   const hasNexusTeams = nexusTeams && nexusTeams.length > 0;
   const nexusTeamCount = hasNexusTeams ? nexusTeams.length : 0;
-  
+
   // Check pit data
   const pitAddresses = getStoredPitAddresses(eventKey);
   const pitData = getStoredPitData(eventKey);
@@ -135,12 +135,12 @@ export const DataStatusCard: React.FC<DataStatusCardProps> = ({
   let teamStatus: 'loaded' | 'empty' | 'partial' = 'empty';
   let teamCount = 0;
   let teamDetails = '';
-  
+
   if (hasTBATeams || hasNexusTeams) {
     // If we have teams from either source, consider it loaded
     teamStatus = 'loaded';
     teamCount = Math.max(tbaTeamCount, nexusTeamCount);
-    
+
     if (hasTBATeams && hasNexusTeams) {
       teamDetails = `TBA: ${tbaTeamCount}, Nexus: ${nexusTeamCount}`;
     } else {
@@ -151,7 +151,7 @@ export const DataStatusCard: React.FC<DataStatusCardProps> = ({
   // Determine pit data status
   let pitStatus: 'loaded' | 'empty' | 'partial' = 'empty';
   let pitDetails = '';
-  
+
   if (hasPitAddresses && hasPitMap) {
     pitStatus = 'loaded';
     pitDetails = `${pitAddressCount} addresses + map`;
@@ -163,7 +163,7 @@ export const DataStatusCard: React.FC<DataStatusCardProps> = ({
   // Determine validation data status
   let validationStatus: 'loaded' | 'empty' | 'partial' = 'empty';
   let validationDetails = '';
-  
+
   if (validationData && validationData.count > 0) {
     if (validationData.isExpired) {
       validationStatus = 'partial';
@@ -192,7 +192,7 @@ export const DataStatusCard: React.FC<DataStatusCardProps> = ({
       label: 'Prediction Processing',
       status: hasVerifiedPredictions ? 'loaded' : 'empty',
       count: verifiedMatchCount,
-      details: hasVerifiedPredictions 
+      details: hasVerifiedPredictions
         ? `${verifiedPredictions.count} predictions verified across ${verifiedMatchCount} matches`
         : 'No predictions processed yet',
       icon: CheckCircle
@@ -266,7 +266,7 @@ export const DataStatusCard: React.FC<DataStatusCardProps> = ({
           {statusItems.map((item) => {
             const StatusIcon = getStatusIcon(item.status);
             const ItemIcon = item.icon;
-            
+
             return (
               <div key={item.label} className="flex items-center justify-between p-3 rounded-lg border bg-card">
                 <div className="flex items-center gap-3">
@@ -285,16 +285,14 @@ export const DataStatusCard: React.FC<DataStatusCardProps> = ({
                     </Badge>
                   )}
                   <div className="flex items-center gap-1">
-                    <StatusIcon className={`h-4 w-4 ${
-                      item.status === 'loaded' ? 'text-green-600' : 
-                      item.status === 'partial' ? 'text-yellow-600' : 
-                      'text-gray-400'
-                    }`} />
-                    <span className={`text-xs font-medium ${
-                      item.status === 'loaded' ? 'text-green-600' : 
-                      item.status === 'partial' ? 'text-yellow-600' : 
-                      'text-gray-400'
-                    }`}>
+                    <StatusIcon className={`h-4 w-4 ${item.status === 'loaded' ? 'text-green-600' :
+                      item.status === 'partial' ? 'text-yellow-600' :
+                        'text-gray-400'
+                      }`} />
+                    <span className={`text-xs font-medium ${item.status === 'loaded' ? 'text-green-600' :
+                      item.status === 'partial' ? 'text-yellow-600' :
+                        'text-gray-400'
+                      }`}>
                       {getStatusText(item.status)}
                     </span>
                   </div>

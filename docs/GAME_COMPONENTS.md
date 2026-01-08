@@ -40,9 +40,9 @@ src/game-template/components/
 
 ```typescript
 interface AutoStartFieldSelectorProps {
-  startPoses: (boolean | null)[];      // Array of 6 position states
-  setStartPoses: ((value: boolean | null) => void)[];  // Setter functions
-  alliance?: string;                   // 'red' or 'blue'
+  startPosition: (boolean | null)[];      // Array of position states
+  setStartPosition: ((value: boolean | null) => void)[];  // Setter functions
+  alliance?: string;                       // 'red' or 'blue'
 }
 ```
 
@@ -50,96 +50,44 @@ interface AutoStartFieldSelectorProps {
 The selected position is stored as an array in the scouting entry:
 
 ```typescript
-startPoses: [false, true, false, false, false, false]
+startPoses: [false, true, false, false, false]
 // Position 1 (index 1) is selected
 ```
 
-**How It's Used:**
+**Unified Configuration (Single Source of Truth):**
+
+Starting positions are configured in `analysis.ts` via `getStartPositionConfig()`:
 
 ```typescript
-// In AutoStartPage.tsx
-import { AutoStartFieldSelector } from "@/game-template/components";
-
-<AutoStartFieldSelector
-  startPoses={startPoses}
-  setStartPoses={setStartPoses}
-  alliance={states?.inputs?.alliance}
-/>
-```
-
-**Customization Example:**
-
-For **2025 Reefscape**, you might have 4 starting positions:
-
-```typescript
-// game-template/components/auto-start/FieldSelector.tsx
-import ReefscapeFieldMap from "@/game/components/ReefscapeFieldMap2025";
-
-export function AutoStartFieldSelector({ startPoses, setStartPoses, alliance }: AutoStartFieldSelectorProps) {
-  return (
-    <Card className="w-full h-full">
-      <CardHeader>
-        <CardTitle>Starting Position</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Select your robot's starting position on the reef
-        </p>
-      </CardHeader>
-      <CardContent>
-        <div className="w-full h-full border rounded-lg overflow-hidden bg-blue-50 dark:bg-blue-950/20">
-          <ReefscapeFieldMap 
-            startPoses={startPoses}
-            setStartPoses={setStartPoses}
-            alliance={alliance}
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
+// src/game-template/analysis.ts
+getStartPositionConfig(): StartPositionConfig {
+    return {
+        positionCount: 5,                    // Number of positions
+        positionLabels: ['Pos 0', 'Pos 1', 'Pos 2', 'Pos 3', 'Pos 4'],
+        fieldImageRed: fieldMapImage,        // Import your red field image
+        fieldImageBlue: fieldMapBlueImage,   // Import your blue field image
+        zones: [                             // Clickable zones (640x480 base)
+            { x: 0, y: 50, width: 128, height: 100, position: 0 },
+            { x: 128, y: 50, width: 128, height: 100, position: 1 },
+            { x: 256, y: 50, width: 128, height: 100, position: 2 },
+            { x: 384, y: 50, width: 128, height: 100, position: 3 },
+            { x: 512, y: 50, width: 128, height: 100, position: 4 },
+        ],
+    };
 }
 ```
 
-For **2024 Crescendo**, you might have 3 starting positions:
+**Shared Components:**
+- `InteractiveFieldMap.tsx` - Clickable field map for scouting workflow
+- `AutoStartPositionMap.tsx` - Field visualization with stats for team stats page
 
-```typescript
-export function AutoStartFieldSelector({ startPoses, setStartPoses, alliance }: AutoStartFieldSelectorProps) {
-  const positions = [
-    { index: 0, label: "Amp Side", x: 50, y: 100 },
-    { index: 1, label: "Center", x: 200, y: 150 },
-    { index: 2, label: "Source Side", x: 350, y: 100 },
-  ];
+Both components use the same zones from `getStartPositionConfig()` ensuring consistency.
 
-  const handleClick = (index: number) => {
-    setStartPoses.forEach(setter => setter(false)); // Clear all
-    setStartPoses[index](true); // Set clicked
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Starting Position</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <svg viewBox="0 0 400 200" className="w-full">
-          {/* Field SVG */}
-          <rect fill={alliance === 'red' ? '#ff0000' : '#0000ff'} />
-          
-          {positions.map(pos => (
-            <circle
-              key={pos.index}
-              cx={pos.x}
-              cy={pos.y}
-              r={30}
-              fill={startPoses[pos.index] ? 'green' : 'gray'}
-              onClick={() => handleClick(pos.index)}
-              style={{ cursor: 'pointer' }}
-            />
-          ))}
-        </svg>
-      </CardContent>
-    </Card>
-  );
-}
-```
+**Customization Steps:**
+1. Add your field images to `src/game-template/assets/`
+2. Import them in `analysis.ts`
+3. Update `getStartPositionConfig()` with your zones and images
+4. The `FieldSelector.tsx` automatically uses the shared configuration
 
 ### 2. PitScoutingPage (`src/core/pages/PitScoutingPage.tsx`)
 

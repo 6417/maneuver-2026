@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getAllScouts, calculateAccuracy } from '@/core/lib/scoutGameUtils';
 import { getAchievementStats } from '@/core/lib/achievementUtils';
-import type { Scout } from '@/core/lib/dexieDB';
+import type { Scout } from '@/game-template/gamification';
 import { analytics } from '@/core/lib/analytics';
 
 export type ScoutMetric = "stakes" | "totalStakes" | "totalPredictions" | "correctPredictions" | "accuracy" | "currentStreak" | "longestStreak";
@@ -34,7 +34,7 @@ export function useScoutDashboard() {
     try {
       const scoutData = await getAllScouts();
       setScouts(scoutData);
-      
+
       // Load achievement stakes for each scout
       const achievementStakesMap: Record<string, number> = {};
       for (const scout of scoutData) {
@@ -42,12 +42,12 @@ export function useScoutDashboard() {
           const stats = await getAchievementStats(scout.name);
           achievementStakesMap[scout.name] = stats.totalStakesFromAchievements;
         } catch (error) {
-          console.error(`Error loading achievement stats for ${scout.name}:`, error);
+          console.error(`Error loading achievement stats for ${scout.name}: `, error);
           achievementStakesMap[scout.name] = 0;
         }
       }
       setAchievementStakes(achievementStakesMap);
-      
+
       analytics.trackEvent('scout_dashboard_loaded', { scoutCount: scoutData.length });
     } catch (error) {
       console.error('❌ Error loading scout data:', error);
@@ -73,10 +73,10 @@ export function useScoutDashboard() {
             const predictionStakes = scout.stakes;
             const achievementStakesValue = achievementStakes[scout.name] || 0;
             value = predictionStakes + achievementStakesValue;
-            
+
             // Debug logging for Riley Davis
             if (scout.name === "Riley Davis") {
-              console.log(`🔍 Riley Davis Stakes Debug:`, {
+              console.log(`🔍 Riley Davis Stakes Debug: `, {
                 predictionStakes,
                 achievementStakesValue,
                 totalValue: value,
@@ -88,7 +88,7 @@ export function useScoutDashboard() {
           default:
             value = scout[chartMetric] as number;
         }
-        
+
         return {
           name: scout.name,
           value,
@@ -102,16 +102,16 @@ export function useScoutDashboard() {
   // Line chart data - shows progression over number of matches
   const lineChartData = useMemo(() => {
     if (chartType !== "line" || scouts.length === 0) return [];
-    
+
     // For line chart, we'll simulate progression data
     // In a real implementation, you'd fetch historical prediction data
     const maxMatches = Math.max(...scouts.map(s => s.totalPredictions));
-    const dataPoints: Array<{ matchNumber: number; [scoutName: string]: number }> = [];
-    
+    const dataPoints: Array<{ matchNumber: number;[scoutName: string]: number }> = [];
+
     // Create data points for each match number
     for (let matchNum = 1; matchNum <= Math.min(maxMatches, 20); matchNum++) {
-      const point: { matchNumber: number; [scoutName: string]: number } = { matchNumber: matchNum };
-      
+      const point: { matchNumber: number;[scoutName: string]: number } = { matchNumber: matchNum };
+
       // For each scout, calculate their metric value at this point in time
       scouts.slice(0, 6).forEach((scout) => {
         if (scout.totalPredictions >= matchNum) {
@@ -148,7 +148,7 @@ export function useScoutDashboard() {
       });
       dataPoints.push(point);
     }
-    
+
     return dataPoints;
   }, [scouts, chartMetric, chartType, achievementStakes]);
 

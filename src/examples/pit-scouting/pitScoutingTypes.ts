@@ -25,19 +25,19 @@ export interface GroundPickupCapabilities {
 export interface PitScoutingEntry {
   id: string;
   teamNumber: string;
-  eventName: string;
+  eventKey: string;
   scoutName: string;
   timestamp: number;
-  
+
   // Basic Information
   robotPhoto?: string; // Base64 encoded image
   weight?: number; // in pounds
   drivetrain?: string;
   programmingLanguage?: string;
-  
+
   // Ground Pickup Capabilities
   groundPickupCapabilities?: GroundPickupCapabilities;
-  
+
   // Reported Auto Scoring by Position (0-4 only)
   reportedAutoScoring?: {
     position0: AutoPositionScoring;
@@ -46,17 +46,17 @@ export interface PitScoutingEntry {
     position3: AutoPositionScoring;
     position4: AutoPositionScoring;
   };
-  
+
   // Reported Teleop Scoring
   reportedTeleopScoring?: TeleopScoring;
-  
+
   // Endgame capabilities
   reportedEndgame?: {
     canShallowClimb?: boolean;
     canDeepClimb?: boolean;
     canPark?: boolean;
   };
-  
+
   // Additional notes
   notes?: string;
 }

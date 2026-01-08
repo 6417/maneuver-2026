@@ -21,14 +21,14 @@ export const useChartData = (
                 team: String(team.teamNumber),
                 x: typeof team[scatterXMetric] === 'number' ? team[scatterXMetric] : 0,
                 y: typeof team[scatterYMetric] === 'number' ? team[scatterYMetric] : 0,
-                eventName: team.eventName
+                eventKey: team.eventKey
             }));
         }
         else if (chartType === "box") {
             // Box plot logic requires raw match data which we aggregated away in TeamStats.
             // The original logic simulated distribution based on average. 
             // We will preserve that simulation logic as it's year-agnostic (just math).
-            const boxData: Array<{ team: string; value: number; eventName: string }> = [];
+            const boxData: Array<{ team: string; value: number; eventKey: string }> = [];
 
             filteredTeamStats.forEach(team => {
                 const baseVal = typeof team[chartMetric] === 'number' ? team[chartMetric] as number : 0;
@@ -41,7 +41,7 @@ export const useChartData = (
                     boxData.push({
                         team: String(team.teamNumber),
                         value: Math.max(0, baseVal + variation),
-                        eventName: team.eventName
+                        eventKey: team.eventKey
                     });
                 }
             });
@@ -67,7 +67,7 @@ export const useChartData = (
                     teleopPoints: teleop,
                     endgamePoints: endgame,
                     totalPoints: auto + teleop + endgame,
-                    eventName: team.eventName
+                    eventKey: team.eventKey
                 };
             })
                 .sort((a, b) => b.totalPoints - a.totalPoints)
@@ -78,7 +78,7 @@ export const useChartData = (
             return filteredTeamStats.map(team => ({
                 team: String(team.teamNumber),
                 value: (team[chartMetric] as number) || 0,
-                eventName: team.eventName
+                eventKey: team.eventKey
             }))
                 .sort((a, b) => (b.value as number) - (a.value as number))
                 .slice(0, 12); // Top 12

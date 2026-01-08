@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { Sigma, TrendingUpDown, Award, Target } from "lucide-react";
 import { calculateAccuracy } from '@/core/lib/scoutGameUtils';
-import type { Scout } from '@/core/lib/dexieDB';
+import type { Scout } from '@/game-template/gamification';
 
 interface ScoutStatsSummaryProps {
   scouts: Scout[];

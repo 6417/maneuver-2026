@@ -49,7 +49,7 @@ export const createColumns = (
                     );
                 }
 
-                if (col.key === "eventName") {
+                if (col.key === "eventKey") {
                     return (
                         <Badge variant="secondary">
                             {String(value)}

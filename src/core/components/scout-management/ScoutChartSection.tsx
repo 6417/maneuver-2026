@@ -4,7 +4,7 @@ import { Trophy, Target, TrendingUp, Award } from "lucide-react";
 import { ScoutChart } from "./ScoutChart";
 import { ScoutTable } from "./ScoutTable";
 import type { ScoutMetric, ScoutChartData } from '@/core/hooks/useScoutDashboard';
-import type { Scout } from '@/core/lib/dexieDB';
+import type { Scout } from '@/game-template/gamification';
 
 const iconMap = {
   Trophy,

@@ -25,7 +25,7 @@ interface FieldCanvasProps {
     fieldImagePath: string;
     stageId?: string;
     onStageChange?: (newStageId: string) => void;
-    selectedTeams?: string[];
+    selectedTeams?: (number | null)[];
 }
 
 const FieldCanvas = ({

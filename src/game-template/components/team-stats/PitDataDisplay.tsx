@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { Badge } from "@/core/components/ui/badge";
 import { ScrollArea } from "@/core/components/ui/scroll-area";
-import { loadPitScoutingByTeamAndEvent, loadPitScoutingByTeam } from "@/core/lib/dexieDB";
+import { loadPitScoutingByTeamAndEvent, loadPitScoutingByTeam } from "@/core/db/database";
 import type { PitScoutingEntryBase } from "@/types/database";
 import { Skeleton } from "@/core/components/ui/skeleton";
 

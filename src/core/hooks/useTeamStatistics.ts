@@ -31,15 +31,15 @@ export const useTeamStatistics = (
     const teamStats = useMemo(() => {
         return allTeamStats.map(stats => {
             const teamData: TeamData = {
-                teamNumber: parseInt(stats.teamNumber),
-                eventName: stats.eventName,
+                teamNumber: stats.teamNumber,
+                eventKey: stats.eventKey,
                 matchCount: stats.matchCount,
             };
 
             // Map all stats to the TeamData object
             // This allows the existing table/chart code to work without changes
             config.columns.forEach(col => {
-                if (["teamNumber", "eventName", "matchCount"].includes(col.key)) return;
+                if (["teamNumber", "eventKey", "matchCount"].includes(col.key)) return;
 
                 // Get value from stats using dot notation
                 const value = getValueByPath(stats, col.key);

@@ -11,13 +11,13 @@ const MatchDataLoader: React.FC = () => {
   // Check for existing match data on mount
   useEffect(() => {
     const matchDataStr = localStorage.getItem("matchData");
-    const eventName = localStorage.getItem("eventName");
-    
-    if (matchDataStr && eventName) {
+    const eventKey = localStorage.getItem("eventKey");
+
+    if (matchDataStr && eventKey) {
       try {
         const matchData = JSON.parse(matchDataStr);
         if (Array.isArray(matchData) && matchData.length > 0) {
-          setLastLoadedEvent(eventName);
+          setLastLoadedEvent(eventKey);
           setMatchCount(matchData.length);
         }
       } catch (error) {

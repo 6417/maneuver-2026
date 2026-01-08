@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/c
 import { Button } from "@/core/components/ui/button";
 import { StatCard } from "@/core/components/team-stats/StatCard";
 import { ProgressCard } from "@/core/components/team-stats/ProgressCard";
-import type { TeamStats } from "@/types/game-interfaces";
+import type { TeamStats } from "@/core/types/team-stats";
 import type { StatSectionDefinition, RateSectionDefinition } from "@/types/team-stats-display";
 
 interface StatOverviewProps {

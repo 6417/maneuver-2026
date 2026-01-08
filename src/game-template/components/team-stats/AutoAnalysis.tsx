@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { StatCard } from "@/core/components/team-stats/StatCard";
-import type { TeamStats } from "@/types/game-interfaces";
+import type { TeamStats } from "@/core/types/team-stats";
 import type { StartPositionConfig } from "@/types/team-stats-display";
+import type { MatchResult } from "@/game-template/analysis";
+import { AutoStartPositionMap } from "./AutoStartPositionMap";
 
 interface AutoAnalysisProps {
     teamStats: TeamStats;
@@ -24,10 +26,12 @@ export function AutoAnalysis({
         );
     }
 
-    const startPositions = (teamStats as TeamStats & { startPositions?: Record<string, number> })?.startPositions;
+    // Extract start positions and match results from teamStats
+    const startPositions = (teamStats as TeamStats & { startPositions?: Record<string, number> })?.startPositions ?? {};
+    const matchResults = (teamStats as TeamStats & { matchResults?: MatchResult[] })?.matchResults ?? [];
 
     const renderStartPositions = () => {
-        if (!startPositions) {
+        if (!startPositions || Object.keys(startPositions).length === 0) {
             return <p className="text-muted-foreground text-center py-4">No position data available</p>;
         }
 
@@ -57,26 +61,17 @@ export function AutoAnalysis({
     return (
         <div className="space-y-6 pb-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Field visualization placeholder */}
+                {/* Field visualization with position overlays */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Starting Position Analysis</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {startPositionConfig.fieldImage ? (
-                            <div className="relative h-96 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                                <img
-                                    src={startPositionConfig.fieldImage}
-                                    alt="Field"
-                                    className="w-full h-full object-contain"
-                                />
-                                {/* Position markers could be overlaid here in a future update */}
-                            </div>
-                        ) : (
-                            <div className="h-96 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                                <p className="text-muted-foreground">Field visualization placeholder</p>
-                            </div>
-                        )}
+                        <AutoStartPositionMap
+                            startPositions={startPositions}
+                            matchResults={matchResults}
+                            config={startPositionConfig}
+                        />
                     </CardContent>
                 </Card>
 

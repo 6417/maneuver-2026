@@ -5,8 +5,8 @@
 
 export interface TeamStats {
     // Basic info
-    teamNumber: string;
-    eventName: string;
+    teamNumber: number;
+    eventKey: string;
     matchCount: number;
 
     // Aggregate scores

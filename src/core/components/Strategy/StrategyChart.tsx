@@ -47,7 +47,7 @@ interface ChartData {
     teleopPoints?: number;
     endgamePoints?: number;
     totalPoints?: number;
-    eventName: string;
+    eventKey: string;
 }
 
 interface StrategyChartProps {
@@ -239,7 +239,7 @@ export const StrategyChart = ({
                                                 return (
                                                     <div className="bg-background border border-border rounded-lg shadow-lg p-3 min-w-[200px]">
                                                         <div className="font-medium text-foreground mb-2">Team {data.team}</div>
-                                                        <div className="text-sm text-muted-foreground mb-1">{data.eventName}</div>
+                                                        <div className="text-sm text-muted-foreground mb-1">{data.eventKey}</div>
                                                         <div className="space-y-1">
                                                             <div className="flex justify-between items-center">
                                                                 <span className="text-sm text-muted-foreground">{chartConfig.x?.label || "X"}:</span>
@@ -295,7 +295,7 @@ export const StrategyChart = ({
                                                 return (
                                                     <div className="bg-background border border-border rounded-lg shadow-lg p-3 min-w-[200px]">
                                                         <div className="font-medium text-foreground mb-2">Team {label}</div>
-                                                        <div className="text-sm text-muted-foreground mb-2">{data.eventName}</div>
+                                                        <div className="text-sm text-muted-foreground mb-2">{data.eventKey}</div>
                                                         <div className="space-y-1">
                                                             <div className="flex justify-between items-center">
                                                                 <span className="text-sm text-muted-foreground">Auto Points:</span>

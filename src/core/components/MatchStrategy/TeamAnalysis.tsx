@@ -14,14 +14,14 @@ import type { Alliance } from "@/core/lib/allianceTypes";
 import type { TeamStats } from "@/core/types/team-stats";
 
 interface TeamAnalysisProps {
-    selectedTeams: string[];
-    availableTeams: string[];
+    selectedTeams: (number | null)[];
+    availableTeams: number[];
     activeStatsTab: string;
     confirmedAlliances: Alliance[];
     selectedBlueAlliance: string;
     selectedRedAlliance: string;
-    getTeamStats: (teamNumber: string) => TeamStats | null;
-    onTeamChange: (index: number, teamNumber: string) => void;
+    getTeamStats: (teamNumber: number | null) => TeamStats | null;
+    onTeamChange: (index: number, teamNumber: number | null) => void;
     onStatsTabChange: (value: string) => void;
     onBlueAllianceChange: (allianceId: string) => void;
     onRedAllianceChange: (allianceId: string) => void;
@@ -44,13 +44,17 @@ export const TeamAnalysis = ({
 
     const handleAllianceCardTouchStart = (e: React.TouchEvent) => {
         const touch = e.touches[0];
-        touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+        if (touch) {
+            touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+        }
     };
 
     const handleAllianceCardTouchEnd = (e: React.TouchEvent) => {
         if (!touchStartRef.current) return;
 
         const touch = e.changedTouches[0];
+        if (!touch) return;
+
         const deltaX = touch.clientX - touchStartRef.current.x;
         const deltaY = touch.clientY - touchStartRef.current.y;
 
@@ -70,7 +74,7 @@ export const TeamAnalysis = ({
                     newIndex = currentIndex < tabValues.length - 1 ? currentIndex + 1 : 0;
                 }
 
-                const newValue = tabValues[newIndex];
+                const newValue = tabValues[newIndex] ?? activeStatsTab;
                 onStatsTabChange(newValue);
             }
         }

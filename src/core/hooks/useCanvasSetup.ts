@@ -22,7 +22,7 @@ interface UseCanvasSetupProps {
   drawingCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   containerRef: React.RefObject<HTMLDivElement | null>;
   fullscreenRef: React.RefObject<HTMLDivElement | null>;
-  selectedTeams?: string[];
+  selectedTeams?: (number | null)[];
   onCanvasReady?: () => void;
   onDimensionsChange?: (dimensions: { width: number; height: number }) => void;
 }

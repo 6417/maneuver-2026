@@ -3,7 +3,7 @@ import type { PitScoutingEntryBase, DrivetrainType, ProgrammingLanguage } from "
 import {
   savePitScoutingEntry,
   loadPitScoutingByTeamAndEvent,
-} from "@/core/lib/dexieDB";
+} from "@/core/db/database";
 import { toast } from "sonner";
 
 interface PitScoutingFormState {
@@ -21,7 +21,7 @@ interface PitScoutingFormState {
 interface UsePitScoutingFormReturn {
   // Form state
   formState: PitScoutingFormState;
-  
+
   // Universal field setters
   setTeamNumber: (value: number | "") => void;
   setEventKey: (value: string) => void;
@@ -31,16 +31,16 @@ interface UsePitScoutingFormReturn {
   setDrivetrain: (value: DrivetrainType | undefined) => void;
   setProgrammingLanguage: (value: ProgrammingLanguage | undefined) => void;
   setNotes: (value: string | undefined) => void;
-  
+
   // Game data setter (for game-specific questions)
   setGameData: (data: Record<string, unknown> | undefined) => void;
-  
+
   // Form actions
   validateForm: () => boolean;
   handleSubmit: () => Promise<boolean>;
   resetForm: () => void;
   loadExistingEntry: () => Promise<void>;
-  
+
   // Loading state
   isLoading: boolean;
   existingEntryId?: string;
@@ -49,7 +49,7 @@ interface UsePitScoutingFormReturn {
 export function usePitScoutingForm(): UsePitScoutingFormReturn {
   const [formState, setFormState] = useState<PitScoutingFormState>({
     teamNumber: "",
-    eventKey: localStorage.getItem("eventName") || "",
+    eventKey: localStorage.getItem("eventKey") || "",
     scoutName: localStorage.getItem("currentScout") || "",
     robotPhoto: undefined,
     weight: undefined,
@@ -187,13 +187,13 @@ export function usePitScoutingForm(): UsePitScoutingFormReturn {
       };
 
       await savePitScoutingEntry(entry);
-      
+
       toast.success(
         existingEntryId
           ? "Pit scouting data updated successfully!"
           : "Pit scouting data saved successfully!"
       );
-      
+
       return true;
     } catch (error) {
       console.error("Error saving pit scouting entry:", error);
@@ -208,7 +208,7 @@ export function usePitScoutingForm(): UsePitScoutingFormReturn {
   const resetForm = useCallback(() => {
     setFormState({
       teamNumber: "",
-      eventKey: localStorage.getItem("eventName") || "",
+      eventKey: localStorage.getItem("eventKey") || "",
       scoutName: localStorage.getItem("currentScout") || "",
       robotPhoto: undefined,
       weight: undefined,

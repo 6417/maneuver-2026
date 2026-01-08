@@ -109,4 +109,4 @@ export {
   calculateStreakBonus,
   updateScoutWithPredictionResult,
   calculateAccuracy,
-} from '../core/db/scoutGameUtils';
+} from '../core/lib/scoutGameUtils';

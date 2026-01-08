@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { loadScoutingData } from "@/core/lib/scoutingDataUtils";
-import { gameDB, pitDB } from "@/core/lib/dexieDB";
+import { pitDB } from "@/core/db/database";
+import { gamificationDB as gameDB } from "@/game-template/gamification";
 import { getPitScoutingStats } from "@/core/lib/pitScoutingUtils";
 
 export interface DataStats {
@@ -43,7 +44,7 @@ export const useDataStats = () => {
       const scoutingData = await loadScoutingData();
       const dataString = JSON.stringify(scoutingData);
       const size = formatDataSize(dataString);
-      
+
       setStats(prev => ({
         ...prev,
         scoutingDataCount: scoutingData.length,
@@ -64,7 +65,7 @@ export const useDataStats = () => {
       const pitStats = await getPitScoutingStats();
       const pitData = await pitDB.pitScoutingData.toArray();
       const pitSize = formatDataSize(JSON.stringify(pitData));
-      
+
       setStats(prev => ({
         ...prev,
         pitScoutingDataCount: pitStats.totalEntries,
@@ -85,12 +86,12 @@ export const useDataStats = () => {
       const scoutsCount = await gameDB.scouts.count();
       const predictionsCount = await gameDB.predictions.count();
       const totalEntries = scoutsCount + predictionsCount;
-      
+
       const scoutsData = await gameDB.scouts.toArray();
       const predictionsData = await gameDB.predictions.toArray();
       const combinedData = { scouts: scoutsData, predictions: predictionsData };
       const gameDataSize = formatDataSize(JSON.stringify(combinedData));
-      
+
       setStats(prev => ({
         ...prev,
         scoutGameDataCount: totalEntries,
@@ -109,19 +110,19 @@ export const useDataStats = () => {
   const loadApiDataCount = useCallback(() => {
     try {
       const allKeys = Object.keys(localStorage);
-      const apiKeys = allKeys.filter(key => 
-        key.includes('tba_') || 
+      const apiKeys = allKeys.filter(key =>
+        key.includes('tba_') ||
         key.startsWith('tba_') ||
-        key.includes('nexus_') || 
+        key.includes('nexus_') ||
         key.startsWith('nexus_') ||
         key === 'matchData' ||
         key === 'eventsList' ||
-        key === 'eventName' ||
+        key === 'eventKey' ||
         key.includes('matchResults_') ||
         key.includes('stakesAwarded_') ||
         key.includes('pit_assignments_')
       );
-      
+
       let totalSize = 0;
       apiKeys.forEach(key => {
         const data = localStorage.getItem(key);
@@ -129,7 +130,7 @@ export const useDataStats = () => {
           totalSize += new Blob([data]).size;
         }
       });
-      
+
       let sizeStr = "0 B";
       if (totalSize < 1024) {
         sizeStr = `${totalSize} B`;
@@ -138,7 +139,7 @@ export const useDataStats = () => {
       } else {
         sizeStr = `${(totalSize / (1024 * 1024)).toFixed(1)} MB`;
       }
-      
+
       setStats(prev => ({
         ...prev,
         apiDataCount: apiKeys.length,

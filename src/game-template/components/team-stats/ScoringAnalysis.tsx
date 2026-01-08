@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/core/components/ui/card";
 import { StatCard } from "@/core/components/team-stats/StatCard";
-import type { TeamStats } from "@/types/game-interfaces";
+import type { TeamStats } from "@/core/types/team-stats";
 import type { StatSectionDefinition } from "@/types/team-stats-display";
 
 interface ScoringAnalysisProps {

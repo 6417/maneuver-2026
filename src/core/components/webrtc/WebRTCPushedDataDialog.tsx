@@ -6,7 +6,8 @@
 import { useState } from 'react';
 import { Upload, Info } from 'lucide-react';
 import { useWebRTC } from '@/core/contexts/WebRTCContext';
-import { pitDB, gameDB, saveScoutingEntries } from '@/core/lib/dexieDB';
+import { pitDB, saveScoutingEntries } from '@/core/db/database';
+import { gamificationDB as gameDB } from '@/game-template/gamification';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -77,14 +78,14 @@ export function WebRTCPushedDataDialog() {
       if (pushedDataType === 'combined') {
         // Import combined data (scouting + scout profiles)
         const data = pushedData as any;
-        
+
         console.log('📦 Combined data structure:', {
           hasEntries: !!data.entries,
           entriesIsArray: Array.isArray(data.entries),
           entriesLength: data.entries?.length,
           hasScoutProfiles: !!data.scoutProfiles
         });
-        
+
         // Import scouting data
         if (data.entries && Array.isArray(data.entries)) {
           await saveScoutingEntries(data.entries);
@@ -116,7 +117,7 @@ export function WebRTCPushedDataDialog() {
       } else if (pushedDataType === 'scouting') {
         // Import scouting data
         const data = pushedData as any;
-        
+
         console.log('📦 Scouting data structure:', {
           dataType: typeof data,
           hasEntries: !!data?.entries,
@@ -125,25 +126,25 @@ export function WebRTCPushedDataDialog() {
           dataKeys: data ? Object.keys(data) : 'no data',
           firstEntry: data?.entries?.[0]
         });
-        
+
         if (!data) {
           throw new Error('No scouting data received');
         }
-        
+
         if (!data.entries) {
           throw new Error('Scouting data missing entries property');
         }
-        
+
         if (!Array.isArray(data.entries)) {
           throw new Error('Scouting data entries is not an array');
         }
-        
+
         if (data.entries.length === 0) {
           console.warn('⚠️ No scouting entries to import (empty array)');
           toast.info('No scouting data to import');
         } else {
           console.log('🔄 Saving', data.entries.length, 'scouting entries...');
-          
+
           // Check if entries are valid
           for (let i = 0; i < data.entries.length; i++) {
             const entry = data.entries[i];
@@ -157,7 +158,7 @@ export function WebRTCPushedDataDialog() {
               throw new Error(`Entry at index ${i} missing data property: ${JSON.stringify(entry).substring(0, 100)}`);
             }
           }
-          
+
           await saveScoutingEntries(data.entries);
           importedCount = data.entries.length;
           console.log('✅ Imported', importedCount, 'scouting entries');
@@ -209,7 +210,7 @@ export function WebRTCPushedDataDialog() {
 
       setImportStatus(`✅ Successfully imported ${getDataTypeLabel(pushedDataType)}`);
       toast.success(`Imported ${getDataTypeLabel(pushedDataType)}`);
-      
+
       setTimeout(() => {
         setImportStatus('');
         setDataPushed(false);
@@ -228,13 +229,13 @@ export function WebRTCPushedDataDialog() {
 
   const handleDecline = () => {
     console.log('Scout declined pushed data');
-    
+
     // Send decline message to lead
-    sendControlMessage({ 
+    sendControlMessage({
       type: 'push-declined',
-      dataType: pushedDataType 
+      dataType: pushedDataType
     });
-    
+
     toast.info('Declined data from lead');
     setDataPushed(false);
     setImportStatus('');
@@ -251,7 +252,7 @@ export function WebRTCPushedDataDialog() {
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <p>The lead scout wants to send you data.</p>
-              
+
               <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                 <div className="flex items-start gap-3">
                   <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />

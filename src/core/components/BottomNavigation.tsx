@@ -57,12 +57,12 @@ export function BottomNavigation() {
   const location = useLocation();
   const isPWA = usePWA();
   const isMobile = useIsMobile();
-  const { 
-    confirmNavigation, 
-    handleConfirm, 
-    handleCancel, 
-    isConfirmDialogOpen, 
-    pendingDestinationLabel 
+  const {
+    confirmNavigation,
+    handleConfirm,
+    handleCancel,
+    isConfirmDialogOpen,
+    pendingDestinationLabel
   } = useNavigationConfirm();
 
   // Show in development for testing, or on mobile when installed as PWA
@@ -80,7 +80,7 @@ export function BottomNavigation() {
 
   return (
     <>
-      <div 
+      <div
         className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
@@ -93,7 +93,7 @@ export function BottomNavigation() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.href;
-            
+
             return (
               <Button
                 key={item.href}
@@ -102,8 +102,8 @@ export function BottomNavigation() {
                 className={cn(
                   "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
                   "min-w-0 flex-1 max-w-16 h-auto",
-                  isActive 
-                    ? "text-primary bg-primary/10" 
+                  isActive
+                    ? "text-primary bg-primary/10"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
               >
@@ -114,7 +114,7 @@ export function BottomNavigation() {
           })}
         </nav>
       </div>
-      
+
       <NavigationConfirmDialog
         open={isConfirmDialogOpen}
         onConfirm={handleConfirm}

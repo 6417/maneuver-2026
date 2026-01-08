@@ -20,46 +20,52 @@
 export interface ScoutingEntryBase<TGameData = Record<string, unknown>> {
   /** Unique entry identifier (auto-generated composite key) */
   id: string;
-  
+
   /** Team number being scouted */
-  teamNumber?: string;
-  
-  /** Match number (e.g., "qm1", "sf2m1") */
-  matchNumber?: string;
-  
+  teamNumber: number;
+
+  /** Match number (numeric) */
+  matchNumber: number;
+
+  /** TBA match key (e.g., "qm1") */
+  matchKey: string;
+
   /** Alliance color ("red" or "blue") */
-  alliance?: string;
-  
+  allianceColor: 'red' | 'blue';
+
   /** Name of the scout who collected this data */
-  scoutName?: string;
-  
+  scoutName: string;
+
   /** Event key (e.g., "2025mrcmp") */
-  eventName?: string;
-  
+  eventKey: string;
+
   /** Game-specific scouting data - teams define their own structure */
-  data: TGameData;
-  
+  gameData: TGameData;
+
   /** Unix timestamp when entry was created */
   timestamp: number;
-  
+
+  /** Optional notes from scout */
+  comments?: string;
+
   // === Correction Tracking ===
   // These fields support re-scouting workflows for data quality
-  
+
   /** Has this entry been corrected/re-scouted? */
   isCorrected?: boolean;
-  
+
   /** Number of times this match has been corrected */
   correctionCount?: number;
-  
+
   /** Unix timestamp of last correction */
   lastCorrectedAt?: number;
-  
+
   /** Name of scout who made the last correction */
   lastCorrectedBy?: string;
-  
+
   /** Notes explaining why correction was made */
   correctionNotes?: string;
-  
+
   /** Original scout's name (preserved when corrections are made) */
   originalScoutName?: string;
 }
@@ -111,10 +117,10 @@ export interface FilterOptions {
  * Query filters for advanced searches
  */
 export interface QueryFilters {
-  teamNumbers?: string[];
-  matchNumbers?: string[];
-  eventNames?: string[];
-  alliances?: string[];
+  teamNumbers?: number[];
+  matchNumbers?: number[];
+  eventKeys?: string[];
+  alliances?: ('red' | 'blue')[];
   scoutNames?: string[];
   dateRange?: {
     start: number;
@@ -122,40 +128,12 @@ export interface QueryFilters {
   };
 }
 
-/**
- * Pit scouting entry (team capabilities, not match performance)
- */
-export interface PitScoutingEntry<TPitData = Record<string, unknown>> {
-  id: string;
-  teamNumber: string;
-  eventName: string;
-  scoutName: string;
-  timestamp: number;
-  
-  /** Game-specific pit scouting data (robot capabilities, measurements, etc.) */
-  data: TPitData;
-  
-  /** Optional photos of the robot */
-  photos?: string[]; // Base64 encoded images
-  
-  /** Additional notes from pit crew */
-  notes?: string;
-}
-
-/**
- * Pit scouting data collection
- */
-export interface PitScoutingData<TPitData = Record<string, unknown>> {
-  entries: PitScoutingEntry<TPitData>[];
-  lastUpdated: number;
-}
-
-/**
- * Pit scouting statistics
- */
-export interface PitScoutingStats {
-  totalEntries: number;
-  teams: string[];
-  events: string[];
-  scouts: string[];
-}
+// =============================================================================
+// PIT SCOUTING TYPES
+// =============================================================================
+// SINGLE SOURCE OF TRUTH: src/types/database.ts
+// - PitScoutingEntryBase (with robotPhoto, weight, drivetrain, etc.)
+// - PitScoutingDatabaseSchema
+// 
+// Do NOT add pit scouting types here - import from @/types/database instead.
+// =============================================================================

@@ -20,17 +20,17 @@ import { db } from './database';
  * // Returns: "2025mrcmp::qm42::3314::red"
  */
 export const generateDeterministicEntryId = (
-  eventName: string,
-  matchNumber: string,
-  teamNumber: string,
-  alliance: string
+  eventKey: string,
+  matchNumber: string | number,
+  teamNumber: string | number,
+  allianceColor: string
 ): string => {
   // Normalize values
-  const normalizedEvent = eventName.toLowerCase().trim();
-  const normalizedMatch = matchNumber.trim();
-  const normalizedTeam = teamNumber.trim();
-  const normalizedAlliance = alliance.toLowerCase().replace('alliance', '').trim();
-  
+  const normalizedEvent = eventKey.toLowerCase().trim();
+  const normalizedMatch = String(matchNumber).trim();
+  const normalizedTeam = String(teamNumber).trim();
+  const normalizedAlliance = allianceColor.toLowerCase().replace('alliance', '').trim();
+
   return `${normalizedEvent}::${normalizedMatch}::${normalizedTeam}::${normalizedAlliance}`;
 };
 
@@ -38,17 +38,17 @@ export const generateDeterministicEntryId = (
  * Generate entry ID from ScoutingEntryBase object
  */
 export const generateEntryId = (entry: Partial<ScoutingEntryBase>): string => {
-  const eventName = String(entry.eventName || '');
+  const eventKey = String(entry.eventKey || '');
   const matchNumber = String(entry.matchNumber || '');
   const teamNumber = String(entry.teamNumber || '');
-  const alliance = String(entry.alliance || '');
-  
-  if (!eventName || !matchNumber || !teamNumber || !alliance) {
+  const alliance = String(entry.allianceColor || '');
+
+  if (!eventKey || !matchNumber || !teamNumber || !alliance) {
     // Fallback to hash-based ID if missing required fields
     return `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
-  
-  return generateDeterministicEntryId(eventName, matchNumber, teamNumber, alliance);
+
+  return generateDeterministicEntryId(eventKey, matchNumber, teamNumber, alliance);
 };
 
 /**
@@ -85,26 +85,26 @@ export const detectConflicts = async <TGameData = Record<string, unknown>>(
     autoReplace: [],
     manualReview: [],
   };
-  
+
   for (const incoming of incomingEntries) {
     const existing = await db.scoutingData.get(incoming.id);
-    
+
     if (!existing) {
       // No conflict - new entry
       result.autoImport.push(incoming);
       continue;
     }
-    
+
     // Check if incoming is a correction
     if (incoming.isCorrected) {
       result.autoReplace.push(incoming);
       continue;
     }
-    
+
     // Check timestamps (auto-replace if incoming is significantly newer)
     const timeDiff = incoming.timestamp - existing.timestamp;
     const THIRTY_SECONDS = 30 * 1000;
-    
+
     if (timeDiff > THIRTY_SECONDS) {
       result.autoReplace.push(incoming);
     } else if (timeDiff < -THIRTY_SECONDS) {
@@ -118,7 +118,7 @@ export const detectConflicts = async <TGameData = Record<string, unknown>>(
       });
     }
   }
-  
+
   return result;
 };
 
@@ -148,13 +148,13 @@ export const mergeScoutingData = <TGameData = Record<string, unknown>>(
       },
     };
   }
-  
+
   const existingIds = new Set(existingData.map(entry => entry.id));
   const uniqueNewData = newData.filter(entry => !existingIds.has(entry.id));
   const duplicateCount = newData.length - uniqueNewData.length;
-  
+
   const merged = [...existingData, ...uniqueNewData];
-  
+
   return {
     merged,
     stats: {
@@ -171,31 +171,31 @@ export const mergeScoutingData = <TGameData = Record<string, unknown>>(
  * Supports fallback matching when eventName is missing
  */
 export const findExistingEntry = async (
-  matchNumber: string,
-  teamNumber: string,
-  alliance: string,
-  eventName?: string
+  matchNumber: number,
+  teamNumber: number,
+  allianceColor: 'red' | 'blue',
+  eventKey?: string
 ): Promise<ScoutingEntryBase | undefined> => {
-  if (!matchNumber || !teamNumber || !alliance) {
+  if (!matchNumber || !teamNumber || !allianceColor) {
     return undefined;
   }
-  
+
   // Try with event name first (fastest)
-  if (eventName) {
+  if (eventKey) {
     const entry = await db.scoutingData
-      .where({ matchNumber, teamNumber, alliance, eventName })
+      .where({ matchNumber, teamNumber, allianceColor, eventKey })
       .first();
-    
+
     if (entry) {
       return entry;
     }
   }
-  
+
   // Fallback: search without event name
   const entries = await db.scoutingData
-    .where({ matchNumber, teamNumber, alliance })
+    .where({ matchNumber, teamNumber, allianceColor })
     .toArray();
-  
+
   return entries[0];
 };
 

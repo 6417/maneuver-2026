@@ -51,7 +51,7 @@ const EndgamePage = () => {
       const teleopRobotStatus = getRobotStatusFromLocalStorage("teleop");
 
       // Extract match data from states
-      const eventKey = states?.inputs?.eventName || localStorage.getItem("eventName") || "";
+      const eventKey = states?.inputs?.eventKey || localStorage.getItem("eventKey") || "";
       const matchNumberStr = states?.inputs?.matchNumber || "";
       const matchType = states?.inputs?.matchType || "qm";
       const teamNumberStr = states?.inputs?.selectTeam || "";
@@ -150,10 +150,10 @@ const EndgamePage = () => {
               <CardTitle className="text-lg">Match Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {states.inputs.eventName && (
+              {states.inputs.eventKey && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Event:</span>
-                  <span className="font-medium">{states.inputs.eventName}</span>
+                  <span className="font-medium">{states.inputs.eventKey}</span>
                 </div>
               )}
               <div className="flex justify-between">

@@ -17,6 +17,13 @@ This folder contains documentation for teams using the maneuver-core framework t
 - 🗄️ **[DATABASE.md](DATABASE.md)** - Using IndexedDB with Dexie
 - 📱 **[PWA.md](PWA.md)** - Progressive Web App setup
 - 🔄 **[DATA_TRANSFER.md](DATA_TRANSFER.md)** - QR codes and WebRTC sync
+- 🔀 **[DATA_TRANSFORMATION.md](DATA_TRANSFORMATION.md)** - Action arrays to counter fields
+
+**Analysis Features:**
+
+- 📊 **[STRATEGY_OVERVIEW.md](STRATEGY_OVERVIEW.md)** - Strategy page configuration
+- 🎯 **[PICK_LISTS.md](PICK_LISTS.md)** - Alliance selection pick lists
+- 🏅 **[MATCH_STRATEGY.md](MATCH_STRATEGY.md)** - Match-specific strategy tools
 
 **React Guides:**
 

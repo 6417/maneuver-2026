@@ -3,7 +3,12 @@
  * Reduces large event data transfers from 74-190 QR codes to <40 codes
  */
 
-import type { ScoutingDataCollection } from './scoutingTypes';
+import type { ScoutingDataExport } from '../types/scouting-entry';
+
+/**
+ * Type alias for data collections used in filtering
+ */
+export type ScoutingDataCollection = ScoutingDataExport;
 
 // Filtering interfaces
 export interface MatchRangeFilter {
@@ -59,14 +64,13 @@ export function setLastExportedMatch(matchNumber: number): void {
  */
 export function extractTeamNumbers(data: ScoutingDataCollection): string[] {
   const teams = new Set<string>();
-  
+
   data.entries.forEach(entry => {
-    const scoutingData = entry.data;
-    if (scoutingData.selectTeam) {
-      teams.add(scoutingData.selectTeam);
+    if (entry.teamNumber) {
+      teams.add(String(entry.teamNumber));
     }
   });
-  
+
   return Array.from(teams).sort((a, b) => {
     // Sort numerically if both are numbers, otherwise alphabetically
     const numA = parseInt(a);
@@ -84,15 +88,15 @@ export function extractTeamNumbers(data: ScoutingDataCollection): string[] {
 export function extractMatchRange(data: ScoutingDataCollection): { min: number; max: number } {
   let min = Infinity;
   let max = -Infinity;
-  
+
   data.entries.forEach(entry => {
-    const matchNum = parseInt(entry.data.matchNumber);
-    if (!isNaN(matchNum)) {
+    const matchNum = entry.matchNumber;
+    if (matchNum) {
       min = Math.min(min, matchNum);
       max = Math.max(max, matchNum);
     }
   });
-  
+
   return {
     min: min === Infinity ? 1 : min,
     max: max === -Infinity ? 1 : max
@@ -103,23 +107,23 @@ export function extractMatchRange(data: ScoutingDataCollection): { min: number; 
  * Apply filters to scouting data
  */
 export function applyFilters(
-  data: ScoutingDataCollection, 
+  data: ScoutingDataCollection,
   filters: DataFilters
 ): ScoutingDataCollection {
   let filteredEntries = data.entries;
-  
+
   // Apply team filter
   if (!filters.teams.includeAll && filters.teams.selectedTeams.length > 0) {
-    filteredEntries = filteredEntries.filter(entry => 
-      filters.teams.selectedTeams.includes(entry.data.selectTeam)
+    filteredEntries = filteredEntries.filter(entry =>
+      filters.teams.selectedTeams.includes(String(entry.teamNumber))
     );
   }
-  
+
   // Apply match range filter
   if (filters.matchRange.type === 'preset' && filters.matchRange.preset !== 'all') {
     const matchRange = extractMatchRange(data);
     let startMatch = matchRange.min;
-    
+
     if (filters.matchRange.preset === 'last10') {
       startMatch = Math.max(matchRange.min, matchRange.max - 9);
     } else if (filters.matchRange.preset === 'last15') {
@@ -130,21 +134,21 @@ export function applyFilters(
       const lastExportedMatch = getLastExportedMatch();
       startMatch = lastExportedMatch ? Math.max(matchRange.min, lastExportedMatch + 1) : matchRange.min;
     }
-    
+
     filteredEntries = filteredEntries.filter(entry => {
-      const matchNum = parseInt(entry.data.matchNumber);
-      return !isNaN(matchNum) && matchNum >= startMatch && matchNum <= matchRange.max;
+      const matchNum = entry.matchNumber;
+      return matchNum >= startMatch && matchNum <= matchRange.max;
     });
   } else if (filters.matchRange.type === 'custom') {
     const start = filters.matchRange.customStart || 1;
     const end = filters.matchRange.customEnd || 999;
-    
+
     filteredEntries = filteredEntries.filter(entry => {
-      const matchNum = parseInt(entry.data.matchNumber);
-      return !isNaN(matchNum) && matchNum >= start && matchNum <= end;
+      const matchNum = entry.matchNumber;
+      return matchNum >= start && matchNum <= end;
     });
   }
-  
+
   return {
     ...data,
     entries: filteredEntries
@@ -161,7 +165,7 @@ export function calculateFilterStats(
 ): FilteredDataStats {
   const originalEntries = originalData.entries.length;
   const filteredEntries = filteredData.entries.length;
-  
+
   // Estimate bytes per entry based on compression
   let bytesPerEntry: number;
   if (useCompression) {
@@ -171,22 +175,22 @@ export function calculateFilterStats(
     // Standard JSON encoding ~2-3KB per entry
     bytesPerEntry = 2500;
   }
-  
+
   const estimatedBytes = filteredEntries * bytesPerEntry;
   const estimatedQRCodes = Math.ceil(estimatedBytes / 2000); // 2KB per QR code
-  
+
   // Calculate scan time estimate (assuming ~3 seconds per QR code)
   const scanTimeSeconds = estimatedQRCodes * 3;
   const scanTimeMinutes = Math.floor(scanTimeSeconds / 60);
   const remainingSeconds = scanTimeSeconds % 60;
-  
+
   let scanTimeEstimate: string;
   if (scanTimeMinutes > 0) {
     scanTimeEstimate = `~${scanTimeMinutes}m ${remainingSeconds}s`;
   } else {
     scanTimeEstimate = `~${scanTimeSeconds}s`;
   }
-  
+
   // Determine warning level
   let warningLevel: 'safe' | 'warning' | 'danger';
   if (estimatedQRCodes <= 20) {
@@ -196,7 +200,7 @@ export function calculateFilterStats(
   } else {
     warningLevel = 'danger';
   }
-  
+
   // Compression reduction info
   let compressionReduction: string | undefined;
   if (useCompression && originalEntries > 0) {
@@ -205,7 +209,7 @@ export function calculateFilterStats(
     const reduction = ((originalQRs - compressedQRs) / originalQRs * 100).toFixed(1);
     compressionReduction = `${reduction}% fewer codes with compression`;
   }
-  
+
   return {
     originalEntries,
     filteredEntries,
@@ -222,7 +226,7 @@ export function calculateFilterStats(
 export function createDefaultFilters(): DataFilters {
   const lastExported = getLastExportedMatch();
   const defaultPreset = lastExported !== null ? 'fromLastExport' : 'all';
-  
+
   return {
     matchRange: {
       type: 'preset',
@@ -242,19 +246,19 @@ export function validateFilters(filters: DataFilters): { valid: boolean; error?:
   if (filters.matchRange.type === 'custom') {
     const start = filters.matchRange.customStart;
     const end = filters.matchRange.customEnd;
-    
+
     if (start !== undefined && end !== undefined && start > end) {
       return { valid: false, error: 'Start match must be less than or equal to end match' };
     }
-    
+
     if (start !== undefined && (start < 1 || start > 200)) {
       return { valid: false, error: 'Start match must be between 1 and 200' };
     }
-    
+
     if (end !== undefined && (end < 1 || end > 200)) {
       return { valid: false, error: 'End match must be between 1 and 200' };
     }
   }
-  
+
   return { valid: true };
 }

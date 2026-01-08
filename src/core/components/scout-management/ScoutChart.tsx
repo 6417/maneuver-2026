@@ -2,7 +2,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, LineChart, Line, Lege
 import { ChartContainer, ChartTooltip } from "@/core/components/ui/chart";
 import { calculateAccuracy } from '@/core/lib/scoutGameUtils';
 import type { ScoutChartData, ScoutMetric } from '@/core/hooks/useScoutDashboard';
-import type { Scout } from '@/core/lib/dexieDB';
+import type { Scout } from '@/game-template/gamification';
 
 interface ScoutChartProps {
   chartType: "bar" | "line";

@@ -12,7 +12,7 @@ export default defineConfig({
     VitePWA({
       registerType: "prompt",
       devOptions: {
-        enabled: true,
+        enabled: false, // Disabled in dev to prevent false update prompts - only active in production
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'android-chrome-192x192.png', 'android-chrome-512x512.png'],
       workbox: {

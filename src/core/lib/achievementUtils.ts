@@ -1,50 +1,52 @@
-import { gameDB } from './dexieDB';
-import type { ScoutAchievement } from './dexieDB';
-import { 
-  ACHIEVEMENT_DEFINITIONS, 
-  checkAchievement, 
+import {
+  gamificationDB,
+  updateScoutPoints,
+  type ScoutAchievement
+} from '@/game-template/gamification';
+import {
+  ACHIEVEMENT_DEFINITIONS,
+  checkAchievement,
   getAchievementProgress,
-  type Achievement 
+  type Achievement
 } from './achievementTypes';
-import { updateScoutPoints } from './dexieDB';
 
 export const checkForNewAchievements = async (scoutName: string): Promise<Achievement[]> => {
-  const scout = await gameDB.scouts.get(scoutName);
+  const scout = await gamificationDB.scouts.get(scoutName);
   if (!scout) return [];
 
-  const unlockedAchievements = await gameDB.scoutAchievements
+  const unlockedAchievements = await gamificationDB.scoutAchievements
     .where('scoutName')
     .equals(scoutName)
     .toArray();
-  
+
   const unlockedIds = new Set(unlockedAchievements.map(a => a.achievementId));
   const newlyUnlocked: Achievement[] = [];
 
   for (const achievement of ACHIEVEMENT_DEFINITIONS) {
     if (unlockedIds.has(achievement.id)) continue;
-    
+
     if (checkAchievement(achievement, scout)) {
-      
+
       if (achievement.requirements.type === 'special') {
         if (achievement.id === 'early_bird') {
-          const totalScouts = await gameDB.scouts.count();
+          const totalScouts = await gamificationDB.scouts.count();
           if (totalScouts > 5) continue;
         }
       }
-      
+
       const scoutAchievement: ScoutAchievement = {
         scoutName,
         achievementId: achievement.id,
         unlockedAt: Date.now(),
         progress: 100
       };
-      
-      await gameDB.scoutAchievements.add(scoutAchievement);
-      
+
+      await gamificationDB.scoutAchievements.add(scoutAchievement);
+
       if (achievement.stakesReward > 0) {
         await updateScoutPoints(scoutName, achievement.stakesReward);
       }
-      
+
       newlyUnlocked.push(achievement);
     }
   }
@@ -57,17 +59,17 @@ export const checkForNewAchievements = async (scoutName: string): Promise<Achiev
 };
 
 export const backfillAchievementsForAllScouts = async (): Promise<void> => {
-  
-  const allScouts = await gameDB.scouts.toArray();
-  
+
+  const allScouts = await gamificationDB.scouts.toArray();
+
   for (const scout of allScouts) {
     const newAchievements = await checkForNewAchievements(scout.name);
-    
+
     if (newAchievements.length > 0) {
       console.log('🏆 Backfilled', newAchievements.length, 'achievements for', scout.name);
     }
   }
-  
+
 };
 
 export const getScoutAchievements = async (scoutName: string): Promise<{
@@ -75,16 +77,16 @@ export const getScoutAchievements = async (scoutName: string): Promise<{
   available: Array<Achievement & { progress: number }>;
   hidden: Array<Achievement & { progress: number }>;
 }> => {
-  const scout = await gameDB.scouts.get(scoutName);
+  const scout = await gamificationDB.scouts.get(scoutName);
   if (!scout) {
     return { unlocked: [], available: [], hidden: [] };
   }
 
-  const unlockedAchievements = await gameDB.scoutAchievements
+  const unlockedAchievements = await gamificationDB.scoutAchievements
     .where('scoutName')
     .equals(scoutName)
     .toArray();
-  
+
   const unlockedIds = new Set(unlockedAchievements.map(a => a.achievementId));
   const unlockedMap = new Map(unlockedAchievements.map(a => [a.achievementId, a]));
 
@@ -102,7 +104,7 @@ export const getScoutAchievements = async (scoutName: string): Promise<{
     } else {
       const progress = getAchievementProgress(achievement, scout);
       const achievementWithProgress = { ...achievement, progress };
-      
+
       if (achievement.hidden && progress < 100) {
         hidden.push(achievementWithProgress);
       } else {
@@ -113,7 +115,7 @@ export const getScoutAchievements = async (scoutName: string): Promise<{
 
   unlocked.sort((a, b) => b.unlockedAt - a.unlockedAt);
 
-  available.sort((a, b) => b.progress - a.progress);  return { unlocked, available, hidden };
+  available.sort((a, b) => b.progress - a.progress); return { unlocked, available, hidden };
 };
 
 export const getAchievementStats = async (scoutName: string): Promise<{
@@ -125,7 +127,7 @@ export const getAchievementStats = async (scoutName: string): Promise<{
 }> => {
   const { unlocked } = await getScoutAchievements(scoutName);
   const visibleAchievements = ACHIEVEMENT_DEFINITIONS.filter(a => !a.hidden);
-  
+
   const totalStakesFromAchievements = unlocked.reduce((sum, achievement) => {
     return sum + achievement.stakesReward;
   }, 0);
@@ -149,13 +151,13 @@ export const getAchievementLeaderboard = async (): Promise<Array<{
   totalStakesFromAchievements: number;
   recentUnlock?: Achievement & { unlockedAt: number };
 }>> => {
-  const allScouts = await gameDB.scouts.toArray();
+  const allScouts = await gamificationDB.scouts.toArray();
   const leaderboard = [];
 
   for (const scout of allScouts) {
     const stats = await getAchievementStats(scout.name);
     const { unlocked } = await getScoutAchievements(scout.name);
-    
+
     leaderboard.push({
       scoutName: scout.name,
       achievementCount: stats.unlockedCount,
@@ -177,7 +179,7 @@ export const getAchievementLeaderboard = async (): Promise<Array<{
 export const checkAllScoutAchievements = async (): Promise<{
   [scoutName: string]: Achievement[];
 }> => {
-  const allScouts = await gameDB.scouts.toArray();
+  const allScouts = await gamificationDB.scouts.toArray();
   const results: { [scoutName: string]: Achievement[] } = {};
 
   for (const scout of allScouts) {
@@ -192,7 +194,7 @@ export const checkAllScoutAchievements = async (): Promise<{
 
 export const getNextAchievements = async (scoutName: string, limit = 3): Promise<Array<Achievement & { progress: number }>> => {
   const { available } = await getScoutAchievements(scoutName);
-  
+
   const nextAchievements = available
     .filter(a => a.progress > 0)
     .sort((a, b) => b.progress - a.progress)
@@ -202,7 +204,7 @@ export const getNextAchievements = async (scoutName: string, limit = 3): Promise
     const zeroProgressAchievements = available
       .filter(a => a.progress === 0)
       .slice(0, limit - nextAchievements.length);
-    
+
     nextAchievements.push(...zeroProgressAchievements);
   }
 

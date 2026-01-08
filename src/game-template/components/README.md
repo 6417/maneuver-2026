@@ -9,20 +9,23 @@ components/
 ├── index.ts                  # Main export file (import from here)
 ├── auto-start/               # Components for AutoStartPage
 │   ├── index.ts
-│   └── FieldSelector.tsx     # Starting position selector
+│   └── FieldSelector.tsx     # Starting position selector (uses shared components)
 ├── pit-scouting/             # Components for PitScoutingPage
 │   ├── index.ts
 │   └── GameQuestions.tsx     # Game-specific pit questions
 ├── scoring/                  # Components for AutoScoringPage & TeleopScoringPage
 │   ├── index.ts
 │   └── ScoringSections.tsx   # Game-specific scoring UI
+├── shared/                   # Shared components used across pages
+│   └── InteractiveFieldMap.tsx  # Clickable field map with zones
 └── team-stats/               # Components for TeamStatsPage
     ├── index.ts
-    ├── StatOverview.tsx      # Overview tab stats
-    ├── ScoringAnalysis.tsx   # Scoring tab stats
-    ├── AutoAnalysis.tsx      # Auto tab stats
-    ├── PerformanceAnalysis.tsx # Performance tab stats
-    └── PitDataDisplay.tsx    # Pit Data tab display
+    ├── StatOverview.tsx          # Overview tab stats
+    ├── ScoringAnalysis.tsx       # Scoring tab stats
+    ├── AutoAnalysis.tsx          # Auto tab stats
+    ├── AutoStartPositionMap.tsx  # Field visualization with zone overlays
+    ├── PerformanceAnalysis.tsx   # Performance tab stats
+    └── PitDataDisplay.tsx        # Pit Data tab display
 ```
 
 ## How to Use
@@ -48,16 +51,24 @@ import { GameSpecificQuestions } from "@/game-template/components/pit-scouting";
 
 **Purpose:** Allow scouts to select starting positions for autonomous mode.
 
-**Current Component:**
-- `FieldSelector.tsx` - Starting position selector with field map
+**Components:**
+- `FieldSelector.tsx` - Starting position selector (uses shared `InteractiveFieldMap`)
+
+**Architecture:**
+The field selector uses a **unified configuration** from `analysis.ts`:
+- Zones, field images, and position count come from `getStartPositionConfig()`
+- `InteractiveFieldMap` (shared component) renders clickable zones on the field
+- Same zones are used for Team Stats visualization via `AutoStartPositionMap`
 
 **How to Customize:**
-1. Open `auto-start/FieldSelector.tsx`
-2. Replace the placeholder implementation with your field map
-3. Update the number of starting positions if needed
-4. Customize styling to match your game's field design
+1. Open `src/game-template/analysis.ts`
+2. Update `getStartPositionConfig()` with your game's:
+   - Field images (`fieldImageRed`, `fieldImageBlue`)
+   - Zone definitions (`zones` array with x, y, width, height on 640x480 base)
+   - Position count and labels
+3. Add your field images to `src/game-template/assets/`
 
-**Example:** See JSDoc comments in `FieldSelector.tsx`
+**Example:** See `getStartPositionConfig()` in `analysis.ts`
 
 ### 2. Pit Scouting Components (`pit-scouting/`)
 

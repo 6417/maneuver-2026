@@ -51,7 +51,6 @@ const AutoScoringPage = () => {
     setScoringActions((prev: any) => [...prev, newAction]);
     // Add to undo history
     setUndoHistory((prev: any) => [...prev, { type: 'action', data: newAction }]);
-    toast.success("Action recorded");
   };
 
   const updateRobotStatus = (updates: Partial<any>) => {
@@ -59,7 +58,6 @@ const AutoScoringPage = () => {
     setUndoHistory((history: any) => [...history, { type: 'status', data: robotStatus }]);
     // Update the status
     setRobotStatus((prev: any) => ({ ...prev, ...updates }));
-    toast.success("Status updated");
   };
 
   const undoLastAction = () => {
@@ -67,9 +65,9 @@ const AutoScoringPage = () => {
       toast.error("No actions to undo");
       return;
     }
-    
+
     const lastChange = undoHistory[undoHistory.length - 1];
-    
+
     if (lastChange.type === 'action') {
       // Undo scoring action
       setScoringActions((prev: any) => prev.slice(0, -1));
@@ -79,7 +77,7 @@ const AutoScoringPage = () => {
       setRobotStatus(lastChange.data);
       toast.success("Undid status change");
     }
-    
+
     // Remove from undo history
     setUndoHistory((prev: any) => prev.slice(0, -1));
   };
@@ -110,10 +108,10 @@ const AutoScoringPage = () => {
         <h1 className="text-2xl font-bold pb-4">Autonomous</h1>
       </div>
       <div className="flex flex-col-reverse lg:flex-row items-start gap-0 lg:gap-6 max-w-7xl w-full h-full min-h-0">
-        
+
         {/* Main Scoring Section */}
         <div className="w-full lg:flex-1 space-y-4 min-h-0 overflow-y-auto">
-          
+
           {/* Game-Specific Scoring Sections */}
           <ScoringSections
             phase="auto"
@@ -142,112 +140,112 @@ const AutoScoringPage = () => {
 
         {/* Info and Controls Sidebar */}
         <div className="flex flex-col gap-4 w-full lg:w-80 pb-4 lg:pb-0 min-h-0">
-        {/* Info and Controls Sidebar */}
-        <div className="flex flex-col gap-4 w-full lg:w-80 pb-4 lg:pb-0 min-h-0">
+          {/* Info and Controls Sidebar */}
+          <div className="flex flex-col gap-4 w-full lg:w-80 pb-4 lg:pb-0 min-h-0">
 
-          {/* Match Info Card */}
-          {states?.inputs && (
-            <Card>
+            {/* Match Info Card */}
+            {states?.inputs && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Autonomous</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Match:</span>
+                    <span className="font-medium">{states.inputs.matchNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Team:</span>
+                    <span className="font-medium">{states.inputs.selectTeam}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Actions:</span>
+                    <Badge variant="outline">{scoringActions.length}</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Recent Actions */}
+            <Card className="h-64">
               <CardHeader>
-                <CardTitle className="text-lg">Autonomous</CardTitle>
+                <CardTitle className="text-lg">Recent Actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Match:</span>
-                  <span className="font-medium">{states.inputs.matchNumber}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Team:</span>
-                  <span className="font-medium">{states.inputs.selectTeam}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Actions:</span>
-                  <Badge variant="outline">{scoringActions.length}</Badge>
+              <CardContent>
+                <div className="space-y-2 h-40 overflow-y-auto pb-2">
+                  {undoHistory.slice(-8).reverse().map((change: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {change.type === 'action' ? (
+                          <>
+                            {change.data.actionType || change.data.type || 'Action'}
+                            {change.data.pieceType && ` - ${change.data.pieceType}`}
+                            {change.data.location && ` @ ${change.data.location}`}
+                            {change.data.level && ` (${change.data.level})`}
+                          </>
+                        ) : (
+                          <span className="text-blue-600 dark:text-blue-400">Status Change</span>
+                        )}
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        #{undoHistory.length - index}
+                      </Badge>
+                    </div>
+                  ))}
+                  {undoHistory.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-2">
+                      No actions recorded yet
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Recent Actions */}
-          <Card className="h-64">
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 h-40 overflow-y-auto pb-2">
-                {undoHistory.slice(-8).reverse().map((change: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {change.type === 'action' ? (
-                        <>
-                          {change.data.actionType || change.data.type || 'Action'}
-                          {change.data.pieceType && ` - ${change.data.pieceType}`}
-                          {change.data.location && ` @ ${change.data.location}`}
-                          {change.data.level && ` (${change.data.level})`}
-                        </>
-                      ) : (
-                        <span className="text-blue-600 dark:text-blue-400">Status Change</span>
-                      )}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      #{undoHistory.length - index}
-                    </Badge>
-                  </div>
-                ))}
-                {undoHistory.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-2">
-                    No actions recorded yet
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+            {/* Robot Status Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Robot Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <StatusToggles
+                  phase="auto"
+                  status={robotStatus}
+                  onStatusUpdate={updateRobotStatus}
+                />
+              </CardContent>
+            </Card>
 
-          {/* Robot Status Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Robot Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <StatusToggles
-                phase="auto"
-                status={robotStatus}
-                onStatusUpdate={updateRobotStatus}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Undo Button */}
-          <Button
-            variant="outline"
-            onClick={undoLastAction}
-            disabled={undoHistory.length === 0}
-            className="w-full"
-          >
-            Undo Last Change
-          </Button>
-
-          {/* Action Buttons - Desktop Only */}
-          <div className="hidden lg:flex gap-4 w-full">
+            {/* Undo Button */}
             <Button
               variant="outline"
-              onClick={handleBack}
-              className="flex-1 h-12 text-lg"
+              onClick={undoLastAction}
+              disabled={undoHistory.length === 0}
+              className="w-full"
             >
-              Back
+              Undo Last Change
             </Button>
-            <Button
-              onClick={handleProceed}
-              className="flex-2 h-12 text-lg font-semibold"
-            >
-              Continue to Teleop
-              <ArrowRight className="ml-0.5" />
-            </Button>
-          </div>
-        </div>
 
+            {/* Action Buttons - Desktop Only */}
+            <div className="hidden lg:flex gap-4 w-full">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                className="flex-1 h-12 text-lg"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleProceed}
+                className="flex-2 h-12 text-lg font-semibold"
+              >
+                Continue to Teleop
+                <ArrowRight className="ml-0.5" />
+              </Button>
+            </div>
+          </div>
+
+        </div>
       </div>
-    </div>
     </div>
   );
 };

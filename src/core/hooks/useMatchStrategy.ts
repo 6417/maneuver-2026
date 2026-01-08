@@ -16,8 +16,8 @@ import type { Alliance } from "../lib/allianceTypes";
 import type { TeamStats } from "@/core/types/team-stats";
 
 export const useMatchStrategy = () => {
-    const [selectedTeams, setSelectedTeams] = useState<string[]>(Array(6).fill(""));
-    const [availableTeams, setAvailableTeams] = useState<string[]>([]);
+    const [selectedTeams, setSelectedTeams] = useState<(number | null)[]>(Array(6).fill(null));
+    const [availableTeams, setAvailableTeams] = useState<number[]>([]);
     const [matchNumber, setMatchNumber] = useState<string>("");
     const [isLookingUpMatch, setIsLookingUpMatch] = useState(false);
     const [confirmedAlliances, setConfirmedAlliances] = useState<Alliance[]>([]);
@@ -28,10 +28,9 @@ export const useMatchStrategy = () => {
     const { teamStats: allTeamStats } = useAllTeamStats();
 
     // Function to get stats for a specific team
-    const getTeamStats = useCallback((teamNumber: string): TeamStats | null => {
-        if (!teamNumber || teamNumber === "none") return null;
-        // Compare as strings since IndexedDB stores teamNumber as number but we pass it as string
-        const stats = allTeamStats.find(s => String(s.teamNumber) === teamNumber);
+    const getTeamStats = useCallback((teamNumber: number | null): TeamStats | null => {
+        if (teamNumber === null) return null;
+        const stats = allTeamStats.find(s => s.teamNumber === teamNumber);
         return stats || null;
     }, [allTeamStats]);
 
@@ -41,27 +40,27 @@ export const useMatchStrategy = () => {
 
         setIsLookingUpMatch(true);
         try {
-            const matchNumber = parseInt(matchNum.trim());
+            const matchNumberValue = parseInt(matchNum.trim());
 
             // First check localStorage match data (from TBA API)
             const matchDataStr = localStorage.getItem("matchData");
             if (matchDataStr) {
                 try {
                     const matchData = JSON.parse(matchDataStr);
-                    const match = matchData.find((m: any) => m.matchNum === matchNumber);
+                    const match = matchData.find((m: any) => m.matchNum === matchNumberValue);
 
                     if (match && match.redAlliance && match.blueAlliance) {
                         const redTeams = match.redAlliance.slice(0, 3);
                         const blueTeams = match.blueAlliance.slice(0, 3);
 
-                        const newSelectedTeams = Array(6).fill("");
+                        const newSelectedTeams = Array(6).fill(null);
 
                         for (let i = 0; i < redTeams.length && i < 3; i++) {
-                            newSelectedTeams[i] = redTeams[i];
+                            newSelectedTeams[i] = Number(redTeams[i]);
                         }
 
                         for (let i = 0; i < blueTeams.length && i < 3; i++) {
-                            newSelectedTeams[i + 3] = blueTeams[i];
+                            newSelectedTeams[i + 3] = Number(blueTeams[i]);
                         }
 
                         setSelectedTeams(newSelectedTeams);
@@ -74,18 +73,18 @@ export const useMatchStrategy = () => {
             }
 
             // Fallback: Try scouting database
-            const matchEntries = await loadScoutingEntriesByMatch(matchNum.trim());
+            const matchEntries = await loadScoutingEntriesByMatch(matchNumberValue);
 
-            const redTeams: string[] = [];
-            const blueTeams: string[] = [];
+            const redTeams: number[] = [];
+            const blueTeams: number[] = [];
 
             matchEntries.forEach(entry => {
                 if (entry.teamNumber) {
-                    if (entry.alliance === "red" || entry.alliance === "redAlliance") {
+                    if (entry.allianceColor === "red") {
                         if (!redTeams.includes(entry.teamNumber)) {
                             redTeams.push(entry.teamNumber);
                         }
-                    } else if (entry.alliance === "blue" || entry.alliance === "blueAlliance") {
+                    } else if (entry.allianceColor === "blue") {
                         if (!blueTeams.includes(entry.teamNumber)) {
                             blueTeams.push(entry.teamNumber);
                         }
@@ -94,17 +93,17 @@ export const useMatchStrategy = () => {
             });
 
             if (redTeams.length > 0 || blueTeams.length > 0) {
-                redTeams.sort((a, b) => Number(a) - Number(b));
-                blueTeams.sort((a, b) => Number(a) - Number(b));
+                redTeams.sort((a, b) => a - b);
+                blueTeams.sort((a, b) => a - b);
 
-                const newSelectedTeams = Array(6).fill("");
+                const newSelectedTeams = Array(6).fill(null);
 
                 for (let i = 0; i < 3; i++) {
-                    newSelectedTeams[i] = redTeams[i] || "";
+                    newSelectedTeams[i] = redTeams[i] || null;
                 }
 
                 for (let i = 0; i < 3; i++) {
-                    newSelectedTeams[i + 3] = blueTeams[i] || "";
+                    newSelectedTeams[i + 3] = blueTeams[i] || null;
                 }
 
                 setSelectedTeams(newSelectedTeams);
@@ -127,10 +126,10 @@ export const useMatchStrategy = () => {
                 // Extract unique team numbers - use teamNumber field (correct field name)
                 const teams = [...new Set(
                     data
-                        .map((entry) => entry.teamNumber?.toString())
+                        .map((entry) => entry.teamNumber)
                         .filter(Boolean)
-                )] as string[];
-                teams.sort((a, b) => Number(a) - Number(b));
+                )] as number[];
+                teams.sort((a, b) => a - b);
                 setAvailableTeams(teams);
             } catch (error) {
                 console.error("Error loading scouting data:", error);
@@ -163,9 +162,9 @@ export const useMatchStrategy = () => {
         return () => clearTimeout(timeoutId);
     }, [matchNumber, lookupMatchTeams]);
 
-    const handleTeamChange = (index: number, teamNumber: string) => {
+    const handleTeamChange = (index: number, teamNumber: number | null) => {
         const newSelectedTeams = [...selectedTeams];
-        newSelectedTeams[index] = teamNumber === "none" ? "" : teamNumber;
+        newSelectedTeams[index] = teamNumber;
         setSelectedTeams(newSelectedTeams);
     };
 
@@ -177,9 +176,9 @@ export const useMatchStrategy = () => {
         if (!alliance) return;
 
         const newSelectedTeams = [...selectedTeams];
-        newSelectedTeams[0] = alliance.captain || "";
-        newSelectedTeams[1] = alliance.pick1 || "";
-        newSelectedTeams[2] = alliance.pick2 || "";
+        newSelectedTeams[0] = alliance.captain || null;
+        newSelectedTeams[1] = alliance.pick1 || null;
+        newSelectedTeams[2] = alliance.pick2 || null;
         setSelectedTeams(newSelectedTeams);
     };
 
@@ -191,9 +190,9 @@ export const useMatchStrategy = () => {
         if (!alliance) return;
 
         const newSelectedTeams = [...selectedTeams];
-        newSelectedTeams[3] = alliance.captain || "";
-        newSelectedTeams[4] = alliance.pick1 || "";
-        newSelectedTeams[5] = alliance.pick2 || "";
+        newSelectedTeams[3] = alliance.captain || null;
+        newSelectedTeams[4] = alliance.pick1 || null;
+        newSelectedTeams[5] = alliance.pick2 || null;
         setSelectedTeams(newSelectedTeams);
     };
 

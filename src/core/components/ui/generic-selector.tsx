@@ -1,5 +1,5 @@
 import { Button } from "@/core/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/core/components/ui/select";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/core/components/ui/sheet";
 import { ChevronDownIcon } from "lucide-react";
 import { useIsMobile } from "@/core/hooks/use-mobile";
@@ -102,9 +102,9 @@ export const GenericSelector = ({
                     onClick={() => onValueChange(option)}
                   >
                     {/* Prefix with "Team " if it looks like a team number and not already formatted */}
-                    {option.match(/^\d+$/) && !displayFormat(option).includes("Team")
-                      ? `Team ${displayFormat(option)}`
-                      : displayFormat(option)}
+                    {String(option).match(/^\d+$/) && !displayFormat(String(option)).includes("Team")
+                      ? `Team ${displayFormat(String(option))}`
+                      : displayFormat(String(option))}
                   </Button>
                 </SheetClose>
               ))}
@@ -122,7 +122,9 @@ export const GenericSelector = ({
       onValueChange={onValueChange}
     >
       <SelectTrigger className={`h-10 w-full ${className}`}>
-        <SelectValue placeholder={placeholder} />
+        <span className="truncate">
+          {getDisplayText(value)}
+        </span>
       </SelectTrigger>
       <SelectContent>
         {availableOptions.includes("none") && <SelectItem value="none">{displayFormat("none")}</SelectItem>}

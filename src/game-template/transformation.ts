@@ -1,62 +1,88 @@
 /**
  * Game-Specific Data Transformation
  * 
- * This module transforms action arrays from match scouting into counter fields
- * for database storage. 
+ * Transforms action arrays from match scouting into counter fields for database storage.
  * 
- * CUSTOMIZE: Modify logic below for your specific game year.
+ * DERIVED FROM: game-schema.ts
+ * All action types and toggle names come from the schema.
  */
 
 import type { DataTransformation } from "@/types/game-interfaces";
+import { toggles, getActionKeys, getActionPoints, type ActionKey } from "./game-schema";
+
+/**
+ * Generate default values for all action counters
+ */
+function generateActionDefaults(): Record<string, number> {
+  const defaults: Record<string, number> = {};
+  getActionKeys().forEach(key => {
+    defaults[`${key}Count`] = 0;
+  });
+  return defaults;
+}
+
+/**
+ * Generate default values for toggle fields
+ */
+function generateToggleDefaults(phase: 'auto' | 'teleop' | 'endgame'): Record<string, boolean> {
+  const defaults: Record<string, boolean> = {};
+  const phaseToggles = toggles[phase];
+  Object.keys(phaseToggles).forEach(key => {
+    defaults[key] = false;
+  });
+  return defaults;
+}
 
 export const gameDataTransformation: DataTransformation = {
   transformActionsToCounters(matchData) {
-    // Extract start position index if available
+    // Extract start position
     const selectedPosition = matchData.startPosition?.findIndex((pos: boolean) => pos === true);
     const startPosition = selectedPosition !== undefined && selectedPosition >= 0
       ? selectedPosition
       : null;
 
-    // Initialize default structure
-    // Customize this to match your GameData interface
+    // Initialize with schema-derived defaults
     const result: Record<string, any> = {
       auto: {
         startPosition,
-        action1Count: 0,
-        action2Count: 0,
-        action3Count: 0,
-        action4Count: 0,
+        ...generateActionDefaults(),
+        ...generateToggleDefaults('auto'),
       },
       teleop: {
-        action1Count: 0,
-        action2Count: 0,
-        action3Count: 0,
+        ...generateActionDefaults(),
+        ...generateToggleDefaults('teleop'),
       },
       endgame: {
-        success: false,
-        park: false,
-        failed: false,
+        ...generateToggleDefaults('endgame'),
       },
     };
 
-    // Example: Count actions from action log
-    // Customize action types based on your MatchScoutingActions configuration
+    // Count actions from action arrays
+    // Action types are derived from schema keys
+    const actionKeys = getActionKeys();
+
     matchData.autoActions?.forEach((action: any) => {
-      if (action.actionType === 'action1') result.auto.action1Count++;
-      else if (action.actionType === 'action2') result.auto.action2Count++;
+      const actionType = action.actionType as ActionKey;
+      if (actionKeys.includes(actionType) && getActionPoints(actionType, 'auto') > 0) {
+        const countKey = `${actionType}Count`;
+        result.auto[countKey] = (result.auto[countKey] || 0) + 1;
+      }
     });
 
     matchData.teleopActions?.forEach((action: any) => {
-      if (action.actionType === 'action1') result.teleop.action1Count++;
-      else if (action.actionType === 'action2') result.teleop.action2Count++;
+      const actionType = action.actionType as ActionKey;
+      if (actionKeys.includes(actionType) && getActionPoints(actionType, 'teleop') > 0) {
+        const countKey = `${actionType}Count`;
+        result.teleop[countKey] = (result.teleop[countKey] || 0) + 1;
+      }
     });
 
-    // Copy robot status flags
+    // Copy robot status flags (from StatusToggles component)
     if (matchData.autoRobotStatus) Object.assign(result.auto, matchData.autoRobotStatus);
     if (matchData.teleopRobotStatus) Object.assign(result.teleop, matchData.teleopRobotStatus);
     if (matchData.endgameRobotStatus) Object.assign(result.endgame, matchData.endgameRobotStatus);
 
-    // Copy generic fields except those we just processed/transformed
+    // Copy any additional fields
     const additionalFields = { ...matchData };
     delete additionalFields.autoActions;
     delete additionalFields.teleopActions;

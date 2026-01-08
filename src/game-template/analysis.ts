@@ -24,6 +24,8 @@ import type {
 } from "@/types/team-stats-display";
 import { scoringCalculations } from "@/game-template/scoring";
 import type { GameData as CoreGameData } from "@/game-template/scoring";
+import fieldMapImage from "@/game-template/assets/FieldMap.png";
+import fieldMapBlueImage from "@/game-template/assets/FieldMapBlue.png";
 
 
 /**
@@ -63,10 +65,16 @@ interface TeamStatsTemplate extends TeamStats {
     matchResults: MatchResult[];
 }
 
-interface MatchResult {
+/**
+ * Match result data for performance display
+ * SINGLE SOURCE OF TRUTH: Used by PerformanceAnalysis and MatchStatsDialog
+ */
+export interface MatchResult {
     matchNumber: string;
     alliance: string;
-    eventName: string;
+    eventKey: string;
+    teamNumber?: number;
+    scoutName?: string;
     totalPoints: number;
     autoPoints: number;
     teleopPoints: number;
@@ -75,6 +83,8 @@ interface MatchResult {
     brokeDown: boolean;
     startPosition: number;
     comment: string;
+    // Allow additional game-specific fields
+    [key: string]: unknown;
 }
 
 /**
@@ -120,8 +130,8 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
             acc.autoAction2 += gameData?.auto?.action2Count || 0;
             acc.teleopAction1 += gameData?.teleop?.action1Count || 0;
             acc.teleopAction2 += gameData?.teleop?.action2Count || 0;
-            acc.endgameSuccess += gameData?.endgame?.success && !gameData?.endgame?.failed ? 1 : 0;
-            acc.breakdown += gameData?.endgame?.failed ? 1 : 0;
+            acc.endgameSuccess += gameData?.endgame?.option1 ? 1 : 0;
+            acc.breakdown += gameData?.endgame?.option2 ? 1 : 0;
 
             // Track start positions
             const pos = gameData?.auto?.startPosition;
@@ -146,18 +156,18 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
             const autoPoints = scoringCalculations.calculateAutoPoints(entry as any);
             const teleopPoints = scoringCalculations.calculateTeleopPoints(entry as any);
             const endgamePoints = scoringCalculations.calculateEndgamePoints(entry as any);
-            const endgameSuccess = entry.gameData?.endgame?.success || false;
+            const endgameSuccess = entry.gameData?.endgame?.option1 || false;
 
             return {
                 matchNumber: String(entry.matchNumber),
                 alliance: entry.allianceColor,
-                eventName: entry.eventKey || '',
+                eventKey: entry.eventKey || '',
                 totalPoints: autoPoints + teleopPoints + endgamePoints,
                 autoPoints,
                 teleopPoints,
                 endgamePoints,
                 endgameSuccess: endgameSuccess || false,
-                brokeDown: entry.gameData?.endgame?.failed || false,
+                brokeDown: entry.gameData?.endgame?.option2 || false,
                 startPosition: entry.gameData?.auto?.startPosition ?? -1,
                 comment: entry.comments || '',
             };
@@ -256,6 +266,16 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
                     { key: 'breakdownRate', label: 'Breakdown Rate' },
                 ],
             },
+            {
+                id: 'reliability-metrics',
+                title: 'Reliability Metrics',
+                tab: 'performance',
+                rates: [
+                    { key: 'mobilityRate', label: 'Mobility Success' },
+                    { key: 'endgameSuccessRate', label: 'Endgame Success' },
+                    { key: 'breakdownRate', label: 'Breakdown Rate' },
+                ],
+            },
         ];
     },
 
@@ -275,13 +295,23 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
      * Get start position configuration
      * 
      * CUSTOMIZE: Define positions for your game's field layout
+     * Zones are relative to a 640x480 base canvas
      */
     getStartPositionConfig(): StartPositionConfig {
         return {
-            positionCount: 3, // CUSTOMIZE: Number of starting positions
-            positionLabels: ['Position 0', 'Position 1', 'Position 2'],
-            positionColors: ['red', 'green', 'blue'],
-            // fieldImage: '/assets/field-2026.png', // CUSTOMIZE: Optional field image
+            positionCount: 5, // 2025 Reefscape: 5 horizontal starting positions
+            positionLabels: ['Position 0', 'Position 1', 'Position 2', 'Position 3', 'Position 4'],
+            positionColors: ['blue', 'blue', 'blue', 'blue', 'blue'],
+            fieldImageRed: fieldMapImage, // Red alliance field map
+            fieldImageBlue: fieldMapBlueImage, // Blue alliance field map
+            // Zone definitions for the auto start position map (640x480 base)
+            zones: [
+                { x: 0, y: 50, width: 128, height: 100, position: 0 },
+                { x: 128, y: 50, width: 128, height: 100, position: 1 },
+                { x: 256, y: 50, width: 128, height: 100, position: 2 },
+                { x: 384, y: 50, width: 128, height: 100, position: 3 },
+                { x: 512, y: 50, width: 128, height: 100, position: 4 },
+            ],
         };
     },
 };

@@ -10,6 +10,7 @@
 
 import * as React from 'react';
 import type { ScoutingEntryBase } from './scouting-entry';
+import type { TeamStats } from '../core/types/team-stats';
 
 /**
  * Interface 1: GameConfig
@@ -335,22 +336,7 @@ export interface StrategyAnalysis<T extends ScoutingEntryBase> {
   getStartPositionConfig(): import('./team-stats-display').StartPositionConfig;
 }
 
-/**
- * Basic team statistics - game-specific structure
- * 
- * Each game year will have different fields here.
- * The only guaranteed fields are teamNumber and matchesPlayed.
- * 
- * Example fields from 2025 REEFSCAPE:
- * - avgAutoCoralL1, avgTeleopCoralL2, etc. (per-piece averages)
- * - mobilityRate, climbRate, defenseRate (percentages 0-100)
- * - startPositions: { position0: 25, position1: 50, ... } (percentages)
- */
-export interface TeamStats {
-  teamNumber: number;
-  matchesPlayed: number;
-  [key: string]: unknown; // Game-specific fields
-}
+// TeamStats is now imported from core/types/team-stats.ts (single source of truth)
 
 /**
  * OPTIONAL: Advanced team statistics

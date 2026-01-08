@@ -58,14 +58,14 @@ interface Event2026 {
 }
 
 interface EventNameSelectorProps {
-  currentEventName: string
-  onEventNameChange: (eventName: string) => void
+  currentEventKey: string
+  onEventKeyChange: (eventKey: string) => void
   showCustomEvents?: boolean // Optional prop to hide custom event functionality
 }
 
-export function EventNameSelector({ 
-  currentEventName, 
-  onEventNameChange,
+export function EventNameSelector({
+  currentEventKey,
+  onEventKeyChange,
   showCustomEvents = true // Default to true for backward compatibility
 }: EventNameSelectorProps) {
   // In development mode, always show custom events for testing
@@ -82,8 +82,8 @@ export function EventNameSelector({
   // Load custom events from localStorage on component mount
   useEffect(() => {
     const savedCustomEvents = localStorage.getItem("customEventsList")
-    const currentEvent = localStorage.getItem("eventName")
-    
+    const currentEvent = localStorage.getItem("eventKey")
+
     if (savedCustomEvents) {
       try {
         setCustomEvents(JSON.parse(savedCustomEvents))
@@ -91,18 +91,18 @@ export function EventNameSelector({
         setCustomEvents([])
       }
     }
-    
+
     // If there's a current event set in localStorage but not passed as prop, update the parent
-    if (currentEvent && !currentEventName) {
-      onEventNameChange(currentEvent)
+    if (currentEvent && !currentEventKey) {
+      onEventKeyChange(currentEvent)
     }
-  }, [currentEventName, onEventNameChange])
+  }, [currentEventKey, onEventKeyChange])
 
   const saveEvent = (eventKey: string, eventName?: string) => {
     if (!eventKey.trim()) return
-    
+
     const trimmedKey = eventKey.trim()
-    
+
     // If it's a custom event (not in official list), add to custom events
     const isOfficial = officialEvents.some(e => e.key === trimmedKey)
     if (!isOfficial && !customEvents.includes(trimmedKey)) {
@@ -110,15 +110,15 @@ export function EventNameSelector({
       setCustomEvents(updatedCustom)
       localStorage.setItem("customEventsList", JSON.stringify(updatedCustom))
     }
-    
+
     // Always set as current event
-    onEventNameChange(trimmedKey)
-    localStorage.setItem("eventName", trimmedKey)
-    
+    onEventKeyChange(trimmedKey)
+    localStorage.setItem("eventKey", trimmedKey)
+
     setOpen(false)
     setShowAddForm(false)
     setNewEventName("")
-    
+
     const displayName = eventName || trimmedKey
     toast.success(`Event set to: ${displayName}`)
   }
@@ -127,12 +127,12 @@ export function EventNameSelector({
     const updatedList = customEvents.filter(e => e !== eventKey)
     setCustomEvents(updatedList)
     localStorage.setItem("customEventsList", JSON.stringify(updatedList))
-    
-    if (currentEventName === eventKey) {
-      onEventNameChange("")
-      localStorage.removeItem("eventName")
+
+    if (currentEventKey === eventKey) {
+      onEventKeyChange("")
+      localStorage.removeItem("eventKey")
     }
-    
+
     toast.success(`Removed custom event: ${eventKey}`)
   }
 
@@ -152,7 +152,7 @@ export function EventNameSelector({
         >
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            {currentEventName || "Select event..."}
+            {currentEventKey || "Select event..."}
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </button>
@@ -190,7 +190,7 @@ export function EventNameSelector({
                 </CommandItem>
               </CommandGroup>
             )}
-            
+
             {allowCustomEvents && showAddForm && (
               <CommandGroup>
                 <div className="p-2 space-y-2">
@@ -231,7 +231,7 @@ export function EventNameSelector({
                 </div>
               </CommandGroup>
             )}
-            
+
             {/* Official 2026 Events */}
             <CommandGroup heading="Official 2026 Events">
               {officialEvents.map((event) => {
@@ -247,7 +247,7 @@ export function EventNameSelector({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          currentEventName === event.key ? "opacity-100" : "opacity-0"
+                          currentEventKey === event.key ? "opacity-100" : "opacity-0"
                         )}
                       />
                       <div className="flex items-center gap-2">
@@ -265,7 +265,7 @@ export function EventNameSelector({
                 )
               })}
             </CommandGroup>
-            
+
             {/* Custom Events */}
             {allowCustomEvents && customEvents.length > 0 && (
               <CommandGroup heading="Custom Events">
@@ -280,7 +280,7 @@ export function EventNameSelector({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          currentEventName === eventKey ? "opacity-100" : "opacity-0"
+                          currentEventKey === eventKey ? "opacity-100" : "opacity-0"
                         )}
                       />
                       <div className="flex items-center gap-2">

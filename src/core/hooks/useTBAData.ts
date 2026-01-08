@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { 
-  type TBAMatch, 
+import {
+  type TBAMatch,
   type TBATeam,
   getMatchResult,
   getEventTeams,
@@ -29,24 +29,24 @@ export const useTBAData = () => {
       toast.error("Please enter your TBA API key");
       return;
     }
-    
+
     if (!tbaEventKey.trim()) {
       toast.error("Please enter an event key");
       return;
     }
 
     setMatchDataLoading(true);
-    
+
     try {
       const headers = {
         "X-TBA-Auth-Key": tbaApiKey,
       };
-      
+
       const res = await fetch(
         `https://www.thebluealliance.com/api/v3/event/${tbaEventKey}/matches/simple`,
         { headers }
       );
-      
+
       if (!res.ok) {
         if (res.status === 401) {
           throw new Error("Invalid API key. Please check your TBA API key.");
@@ -56,7 +56,7 @@ export const useTBAData = () => {
           throw new Error(`API request failed with status ${res.status}`);
         }
       }
-      
+
       const fullData = await res.json();
 
       const qualMatchesCleaned = [];
@@ -74,16 +74,16 @@ export const useTBAData = () => {
           });
         }
       }
-      
+
       qualMatchesCleaned.sort((a, b) => a.matchNum - b.matchNum);
 
       localStorage.setItem("matchData", JSON.stringify(qualMatchesCleaned));
-      localStorage.setItem("eventName", tbaEventKey);
-      
+      localStorage.setItem("eventKey", tbaEventKey);
+
       // Update events list
       const savedEvents = localStorage.getItem("eventsList");
       let eventsList: string[] = [];
-      
+
       if (savedEvents) {
         try {
           eventsList = JSON.parse(savedEvents);
@@ -91,7 +91,7 @@ export const useTBAData = () => {
           eventsList = [];
         }
       }
-      
+
       if (!eventsList.includes(tbaEventKey)) {
         eventsList.push(tbaEventKey);
         eventsList.sort();
@@ -100,10 +100,10 @@ export const useTBAData = () => {
 
       const successMessage = `Match data loaded: ${qualMatchesCleaned.length} matches for ${tbaEventKey}`;
       toast.success(successMessage);
-      
+
       // Update current event in localStorage after successful load
       setCurrentEvent(tbaEventKey.trim());
-      
+
       // Clear API key from memory after successful fetch if not remembering
       if (!rememberForSession) {
         setApiKey("");
@@ -137,23 +137,23 @@ export const useTBAData = () => {
         `https://www.thebluealliance.com/api/v3/event/${tbaEventKey.trim()}/matches/simple`,
         { headers }
       );
-      
+
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
       }
-      
+
       const fullData = await response.json();
-      
+
       // Filter for qualification matches
       const qualMatches = fullData.filter((match: TBAMatch) => match.comp_level === "qm");
       qualMatches.sort((a: TBAMatch, b: TBAMatch) => a.match_number - b.match_number);
-      
+
       setMatches(qualMatches);
       toast.success(`Loaded ${qualMatches.length} qualification matches`);
-      
+
       // Update current event in localStorage after successful load
       setCurrentEvent(tbaEventKey.trim());
-      
+
       // Store match results in localStorage for stakes calculation
       const matchResults = qualMatches.map((match: TBAMatch) => ({
         eventKey: tbaEventKey.trim(),
@@ -162,10 +162,10 @@ export const useTBAData = () => {
         redScore: getMatchResult(match).redScore,
         blueScore: getMatchResult(match).blueScore
       }));
-      
+
       localStorage.setItem('matchResults', JSON.stringify(matchResults));
       localStorage.setItem('currentEventKey', tbaEventKey.trim());
-      
+
       // Clear API key from memory if not remembering for session
       if (!rememberForSession) {
         setApiKey("");
@@ -213,7 +213,7 @@ export const useTBAData = () => {
       // If not stored, fetch from API
       const fetchedTeams = await getEventTeams(tbaEventKey, tbaApiKey);
       setTeams(fetchedTeams);
-      
+
       // Automatically store teams to localStorage for persistence
       try {
         storeEventTeams(tbaEventKey, fetchedTeams);
@@ -224,12 +224,12 @@ export const useTBAData = () => {
         // Don't fail the whole operation if storage fails
         setIsStored(false);
       }
-      
+
       toast.success(`Loaded ${fetchedTeams.length} teams from TBA API`);
-      
+
       // Update current event in localStorage after successful load
       setCurrentEvent(tbaEventKey.trim());
-      
+
       // Clear API key from memory if not remembering for session
       if (!rememberForSession) {
         setApiKey("");
@@ -278,7 +278,7 @@ export const useTBAData = () => {
     matches,
     teams,
     isStored,
-    
+
     // Actions
     fetchMatchDataFromTBA,
     loadMatchResults,

@@ -21,8 +21,8 @@ interface AchievementStats {
   recentAchievements: Array<Achievement & { unlockedAt: number }>;
 }
 
-export const AchievementOverview: React.FC<AchievementOverviewProps> = ({ 
-  scoutName, 
+export const AchievementOverview: React.FC<AchievementOverviewProps> = ({
+  scoutName,
   onViewAll,
   onDataRefresh
 }) => {
@@ -35,16 +35,16 @@ export const AchievementOverview: React.FC<AchievementOverviewProps> = ({
     setBackfillLoading(true);
     try {
       await backfillAchievementsForAllScouts();
-      
+
       // Reload achievement data
       const [achievementStats, upcomingAchievements] = await Promise.all([
         getAchievementStats(scoutName),
         getNextAchievements(scoutName, 2)
       ]);
-      
+
       setStats(achievementStats);
       setNextAchievements(upcomingAchievements);
-      
+
       // Notify parent to refresh other data if needed
       if (onDataRefresh) {
         onDataRefresh();
@@ -59,14 +59,14 @@ export const AchievementOverview: React.FC<AchievementOverviewProps> = ({
   useEffect(() => {
     const loadOverview = async () => {
       if (!scoutName) return;
-      
+
       setLoading(true);
       try {
         const [achievementStats, upcomingAchievements] = await Promise.all([
           getAchievementStats(scoutName),
           getNextAchievements(scoutName, 2)
         ]);
-        
+
         setStats(achievementStats);
         setNextAchievements(upcomingAchievements);
       } catch (error) {
@@ -128,29 +128,35 @@ export const AchievementOverview: React.FC<AchievementOverviewProps> = ({
           </div>
         </div>
 
-        {stats.recentAchievements.length > 0 && (
+        {stats.recentAchievements.length > 0 && stats.recentAchievements[0] && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-1">
               <Star className="h-4 w-4" />
               Recent Achievement
             </h4>
-            <div className="p-3 rounded-lg bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border border-yellow-200 dark:border-yellow-800">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{stats.recentAchievements[0].icon}</span>
-                <div className="flex-1">
-                  <div className="font-medium text-sm">{stats.recentAchievements[0].name}</div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
-                    {stats.recentAchievements[0].description}
+            {(() => {
+              const recent = stats.recentAchievements[0];
+              if (!recent) return null;
+              return (
+                <div className="p-3 rounded-lg bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border border-yellow-200 dark:border-yellow-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{recent.icon}</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{recent.name}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                        {recent.description}
+                      </div>
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className={`text-xs ${ACHIEVEMENT_TIERS[recent.tier].textColor}`}
+                    >
+                      {recent.tier}
+                    </Badge>
                   </div>
                 </div>
-                <Badge 
-                  variant="secondary" 
-                  className={`text-xs ${ACHIEVEMENT_TIERS[stats.recentAchievements[0].tier].textColor}`}
-                >
-                  {stats.recentAchievements[0].tier}
-                </Badge>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         )}
 
@@ -170,7 +176,7 @@ export const AchievementOverview: React.FC<AchievementOverviewProps> = ({
                       <div className="text-xs text-gray-500 truncate">{achievement.description}</div>
                       {achievement.progress > 0 && (
                         <div className="flex items-center gap-2 mt-1">
-                          <Progress 
+                          <Progress
                             value={achievement.progress}
                             className="flex-1 h-1.5"
                           />
@@ -190,9 +196,9 @@ export const AchievementOverview: React.FC<AchievementOverviewProps> = ({
 
         {/* Check Achievements Button */}
         <div className="pt-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleBackfillAchievements}
             disabled={backfillLoading}
             className="w-full flex items-center justify-center gap-2"

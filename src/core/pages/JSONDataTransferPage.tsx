@@ -5,7 +5,7 @@ import JSONUploader from "@/core/components/data-transfer/JSONUploader";
 import { convertArrayOfArraysToCSV } from "@/core/lib/utils";
 import { loadScoutingData } from "@/core/lib/scoutingDataUtils";
 import { loadPitScoutingData, exportPitScoutingToCSV, downloadPitScoutingImagesOnly } from "@/core/lib/pitScoutingUtils";
-import { gameDB } from "@/core/lib/dexieDB";
+import { gamificationDB as gameDB } from "@/game-template/gamification";
 import { Separator } from "@/core/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/components/ui/select";
 
@@ -17,8 +17,8 @@ const JSONDataTransferPage = () => {
 
   if (mode === 'upload') {
     return (
-      <JSONUploader 
-        onBack={() => setMode('select')} 
+      <JSONUploader
+        onBack={() => setMode('select')}
       />
     );
   }
@@ -31,7 +31,7 @@ const JSONDataTransferPage = () => {
       switch (dataType) {
         case 'scouting': {
           const scoutingEntries = await loadScoutingData();
-          
+
           if (scoutingEntries.length === 0) {
             alert("No scouting data found.");
             return;
@@ -43,14 +43,14 @@ const JSONDataTransferPage = () => {
           const teleopFieldsSet = new Set<string>();
           const endgameFieldsSet = new Set<string>();
           const otherFieldsSet = new Set<string>();
-          
+
           // Helper function to recursively flatten nested objects
           const flattenObject = (obj: Record<string, any>, prefix = ''): Record<string, any> => {
             const flattened: Record<string, any> = {};
             for (const key of Object.keys(obj)) {
               const value = obj[key];
               const newKey = prefix ? `${prefix}.${key}` : key;
-              
+
               if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
                 // Recursively flatten nested objects
                 Object.assign(flattened, flattenObject(value, newKey));
@@ -60,7 +60,7 @@ const JSONDataTransferPage = () => {
             }
             return flattened;
           };
-          
+
           // First pass: collect all unique flattened gameData fields, organized by phase
           for (const entry of scoutingEntries) {
             if (entry.gameData) {
@@ -79,7 +79,7 @@ const JSONDataTransferPage = () => {
               }
             }
           }
-          
+
           // Build complete header with proper match timeline ordering
           // Sort auto fields with startPosition first (matches match timeline: start position → auto actions)
           const autoFields = Array.from(autoFieldsSet).sort((a, b) => {
@@ -93,19 +93,19 @@ const JSONDataTransferPage = () => {
           const gameDataFields = [...autoFields, ...teleopFields, ...endgameFields, ...otherFields];
           // Comments comes last - it's the final field gathered in the match timeline
           const dynamicHeader = [...baseFields, ...gameDataFields, 'comments'];
-          
+
           // Second pass: convert entries to arrays using pre-built header
           const dataArrays: (string | number)[][] = [];
           for (const entry of scoutingEntries) {
             const row: (string | number)[] = [];
             const entryAsRecord = entry as unknown as Record<string, unknown>;
-            
+
             // Process base fields
             for (const field of baseFields) {
               const value = entryAsRecord[field];
               row.push(value !== undefined ? value as string | number : '');
             }
-            
+
             // Process gameData fields with flattening
             if (entry.gameData) {
               const flattened = flattenObject(entry.gameData as Record<string, any>);
@@ -119,16 +119,16 @@ const JSONDataTransferPage = () => {
                 row.push('');
               }
             }
-            
+
             // Add comments field at the end
             const comments = entryAsRecord['comments'];
             row.push(comments !== undefined ? comments as string | number : '');
-            
+
             dataArrays.push(row);
           }
-          
+
           const finalDataArr = [dynamicHeader, ...dataArrays];
-          
+
           csv = convertArrayOfArraysToCSV(finalDataArr as (string | number)[][]);
           filename = `ManeuverScoutingData-${new Date().toLocaleTimeString()}-local.csv`;
           break;
@@ -150,7 +150,7 @@ const JSONDataTransferPage = () => {
           // CSV export for scout profiles
           const scoutsData = await gameDB.scouts.toArray();
           const predictionsData = await gameDB.predictions.toArray();
-          
+
           if (scoutsData.length === 0 && predictionsData.length === 0) {
             alert("No scout profiles data found.");
             return;
@@ -170,7 +170,7 @@ const JSONDataTransferPage = () => {
             new Date(scout.createdAt).toLocaleDateString(),
             new Date(scout.lastUpdated).toLocaleDateString()
           ]);
-          
+
           const scoutCsvData = [scoutHeaders, ...scoutRows];
           csv = convertArrayOfArraysToCSV(scoutCsvData as (string | number)[][]);
           filename = `ManeuverScoutProfiles-${new Date().toLocaleTimeString()}-local.csv`;
@@ -231,7 +231,7 @@ const JSONDataTransferPage = () => {
                 switch (dataType) {
                   case 'scouting': {
                     const scoutingEntries = await loadScoutingData();
-                    
+
                     if (scoutingEntries.length === 0) {
                       alert("No scouting data found.");
                       return;
@@ -243,7 +243,7 @@ const JSONDataTransferPage = () => {
                   }
                   case 'pitScouting': {
                     const pitData = await loadPitScoutingData();
-                    
+
                     if (pitData.entries.length === 0) {
                       alert("No pit scouting data found.");
                       return;
@@ -266,7 +266,7 @@ const JSONDataTransferPage = () => {
                   case 'scoutProfiles': {
                     const scoutsData = await gameDB.scouts.toArray();
                     const predictionsData = await gameDB.predictions.toArray();
-                    
+
                     if (scoutsData.length === 0 && predictionsData.length === 0) {
                       alert("No scout profiles data found.");
                       return;
@@ -319,8 +319,8 @@ const JSONDataTransferPage = () => {
               disabled={dataType === 'pitScoutingImagesOnly'}
               className="w-full h-16 text-xl"
             >
-              {dataType === 'pitScoutingImagesOnly' 
-                ? 'Images Cannot Be Downloaded as CSV' 
+              {dataType === 'pitScoutingImagesOnly'
+                ? 'Images Cannot Be Downloaded as CSV'
                 : `Download ${dataType === 'scouting' ? 'Scouting Data' : dataType === 'pitScouting' ? 'Pit Scouting Data' : 'Scout Profiles'} as CSV`
               }
             </Button>

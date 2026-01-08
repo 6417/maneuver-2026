@@ -12,7 +12,7 @@ import FieldCanvas from "./FieldCanvas";
 interface FieldStrategyProps {
     fieldImagePath: string;  // Path to field image
     activeTab: string;
-    selectedTeams?: string[];  // Optional: team numbers to display on canvas
+    selectedTeams?: (number | null)[];  // Optional: team numbers to display on canvas
     onTabChange: (value: string) => void;
 }
 

@@ -10,8 +10,8 @@ import type { TeamStats } from "@/core/types/team-stats";
 interface TeamStatsHeadersProps {
     alliance: 'red' | 'blue';
     activeStatsTab: string;
-    selectedTeams: string[];
-    getTeamStats: (teamNumber: string) => TeamStats | null;
+    selectedTeams: (number | null)[];
+    getTeamStats: (teamNumber: number | null) => TeamStats | null;
 }
 
 export const TeamStatsHeaders = ({
@@ -24,9 +24,9 @@ export const TeamStatsHeaders = ({
     const startIndex = isBlue ? 3 : 0;
 
     // Get stats for all 3 teams in this alliance
-    const team1Stats = getTeamStats(selectedTeams[startIndex]);
-    const team2Stats = getTeamStats(selectedTeams[startIndex + 1]);
-    const team3Stats = getTeamStats(selectedTeams[startIndex + 2]);
+    const team1Stats = getTeamStats(selectedTeams[startIndex] ?? null);
+    const team2Stats = getTeamStats(selectedTeams[startIndex + 1] ?? null);
+    const team3Stats = getTeamStats(selectedTeams[startIndex + 2] ?? null);
 
     // Calculate alliance totals based on active tab
     let totalValue = 0;

@@ -12,12 +12,14 @@ const SCOUTER_COLOR_PALETTE = [
 
 // Generate consistent colors for scouts (CSS classes for UI components)
 export const getScoutColor = (index: number) => {
-  return SCOUTER_COLOR_PALETTE[index % SCOUTER_COLOR_PALETTE.length].css;
+  const colorDef = SCOUTER_COLOR_PALETTE[index % SCOUTER_COLOR_PALETTE.length];
+  return colorDef?.css || "";
 };
 
 // Get color values for SVG/canvas rendering
 export const getScoutColorValues = (index: number) => {
   const colorDef = SCOUTER_COLOR_PALETTE[index % SCOUTER_COLOR_PALETTE.length];
+  if (!colorDef) return { bg: '#e5e7eb', border: '#9ca3af' };
   return { bg: colorDef.bg, border: colorDef.border };
 };
 

@@ -29,7 +29,7 @@ const val = (n: number | undefined): number => n || 0;
  * Calculate all statistics for a single team from their match entries.
  * Returns a complete TeamStats object with all metrics.
  */
-export const calculateTeamStats = (teamMatches: ScoutingEntry[]): Omit<TeamStats, 'teamNumber' | 'eventName'> => {
+export const calculateTeamStats = (teamMatches: ScoutingEntry[]): Omit<TeamStats, 'teamNumber' | 'eventKey'> => {
     if (teamMatches.length === 0) {
         return getEmptyStats();
     }
@@ -82,8 +82,8 @@ export const calculateTeamStats = (teamMatches: ScoutingEntry[]): Omit<TeamStats
     // AUTO PHASE STATS
     // ============================================================================
 
-    // Mobility indicator (using toggle1 as generic mobility flag)
-    const mobilityCount = teamMatches.filter(m => m.gameData?.auto?.toggle1 === true).length;
+    // Mobility indicator (using autoToggle from schema)
+    const mobilityCount = teamMatches.filter(m => m.gameData?.auto?.autoToggle === true).length;
 
     // Starting positions
     const startPositions = calculateStartPositions(teamMatches, matchCount);
@@ -214,7 +214,7 @@ function calculateStartPositions(
 /**
  * Return empty stats object (for teams with no data)
  */
-function getEmptyStats(): Omit<TeamStats, 'teamNumber' | 'eventName'> {
+function getEmptyStats(): Omit<TeamStats, 'teamNumber' | 'eventKey'> {
     return {
         matchCount: 0,
         totalPoints: 0,
