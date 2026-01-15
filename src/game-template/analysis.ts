@@ -1,12 +1,12 @@
 /**
  * Game-Specific Strategy Analysis
- * 
+ *
  * This module provides team statistics calculations and display configuration
  * for the Team Statistics page.
- * 
+ *
  * HOW TO CUSTOMIZE FOR YOUR GAME YEAR:
  * ====================================
- * 
+ *
  * 1. Update calculateBasicStats() to compute your game's metrics
  * 2. Update getStatSections() to define stat cards for each tab
  * 3. Update getRateSections() to define progress bar sections
@@ -89,13 +89,13 @@ export interface MatchResult {
 
 /**
  * Strategy Analysis Implementation
- * 
+ *
  * CUSTOMIZE: Update all methods for your game year
  */
 export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
     /**
      * Calculate basic statistics for a team
-     * 
+     *
      * CUSTOMIZE: Update this method with your game's scoring logic
      */
     calculateBasicStats(entries: ScoutingEntryTemplate[]): TeamStatsTemplate {
@@ -251,7 +251,7 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
 
     /**
      * Get stat sections for the Team Statistics page
-     * 
+     *
      * CUSTOMIZE: Define stat cards for Overview and Scoring tabs
      */
     getStatSections(): StatSectionDefinition[] {
@@ -298,7 +298,7 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
 
     /**
      * Get rate sections (progress bars) for the Team Statistics page
-     * 
+     *
      * CUSTOMIZE: Define progress bar sections for Overview and Performance tabs
      */
     getRateSections(): RateSectionDefinition[] {
@@ -328,7 +328,7 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
 
     /**
      * Get match badges for match-by-match performance list
-     * 
+     *
      * CUSTOMIZE: Define game-specific badges (e.g., "Climbed", "Broke Down")
      */
     getMatchBadges(): MatchBadgeDefinition[] {
@@ -340,24 +340,24 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
 
     /**
      * Get start position configuration
-     * 
+     *
      * CUSTOMIZE: Define positions for your game's field layout
      * Zones are relative to a 640x480 base canvas
      */
     getStartPositionConfig(): StartPositionConfig {
         return {
             positionCount: 5, // 2025 Reefscape: 5 horizontal starting positions
-            positionLabels: ['Position 0', 'Position 1', 'Position 2', 'Position 3', 'Position 4'],
+            positionLabels: ['Trench R', 'Bump R', 'Hub', 'Bump L', 'Trench L'],
             positionColors: ['blue', 'blue', 'blue', 'blue', 'blue'],
             fieldImageRed: fieldMapImage, // Red alliance field map
             fieldImageBlue: fieldMapBlueImage, // Blue alliance field map
             // Zone definitions for the auto start position map (640x480 base)
             zones: [
-                { x: 0, y: 50, width: 128, height: 100, position: 0 },
-                { x: 128, y: 50, width: 128, height: 100, position: 1 },
-                { x: 256, y: 50, width: 128, height: 100, position: 2 },
-                { x: 384, y: 50, width: 128, height: 100, position: 3 },
-                { x: 512, y: 50, width: 128, height: 100, position: 4 },
+                { x: 40, y: 245, width: 112, height: 100, position: 0 },
+                { x: 152, y: 245, width: 112, height: 100, position: 1 },
+                { x: 264, y: 245, width: 112, height: 100, position: 2 },
+                { x: 376, y: 245, width: 112, height: 100, position: 3 },
+                { x: 488, y: 245, width: 112, height: 100, position: 4 },
             ],
         };
     },
