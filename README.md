@@ -1,4 +1,20 @@
-# maneuver-core
+# maneuver 2026
+
+Scouting-App for team 6417.
+
+## Run server
+
+
+
+## Setup new year
+
+1. fork repository from https://github.com/ShinyShips/maneuver-core
+2. `$ npm install`
+3. `$ cp .env.example .env`
+4. API-Key from TBA to the `.env`
+5. tbd: add `src/game-template`
+
+## maneuver-core
 
 **A year-agnostic framework template for building FRC scouting apps**
 
