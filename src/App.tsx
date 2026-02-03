@@ -50,6 +50,7 @@ import { StatusBarSpacer } from '@/core/components/StatusBarSpacer';
 import { SplashScreen } from '@/core/components/SplashScreen';
 import { FullscreenProvider } from '@/core/contexts/FullscreenContext';
 import { WebRTCProvider } from '@/core/contexts/WebRTCContext';
+import { ScoutProvider } from '@/core/contexts/ScoutContext';
 import { WebRTCDataRequestDialog } from '@/core/components/webrtc/WebRTCDataRequestDialog';
 import { WebRTCPushedDataDialog } from '@/core/components/webrtc/WebRTCPushedDataDialog';
 import { WebRTCNotifications } from '@/core/components/webrtc/WebRTCNotifications';
@@ -57,7 +58,7 @@ import { GameProvider } from "@/core/contexts/GameContext";
 import { strategyAnalysis } from "@/game-template/analysis";
 import { scoringCalculations } from "@/game-template/scoring";
 import { gameDataTransformation } from "@/game-template/transformation";
-import { StatusToggles } from "@/game-template/components";
+import { StatusToggles, GameSpecificQuestions } from "@/game-template/components";
 import logo from "../src/assets/Maneuver Wordmark Vertical.png";
 
 // Mock implementations for missing template parts
@@ -77,7 +78,7 @@ function App() {
             validation={mockValidation as any}
             analysis={strategyAnalysis as any}
             transformation={gameDataTransformation as any}
-            ui={{ ...mockUI, StatusToggles } as any}
+            ui={{ ...mockUI, StatusToggles, PitScoutingQuestions: GameSpecificQuestions } as any}
           >
             <MainLayout />
           </GameProvider>
@@ -185,19 +186,21 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <FullscreenProvider>
-        <WebRTCProvider>
-          <div className="min-h-screen bg-background">
-            <RouterProvider router={router} />
-            <InstallPrompt />
-            <PWAUpdatePrompt />
-            <StatusBarSpacer />
-            <WebRTCDataRequestDialog />
-            <WebRTCPushedDataDialog />
-            <WebRTCNotifications />
-          </div>
-        </WebRTCProvider>
-      </FullscreenProvider>
+      <ScoutProvider>
+        <FullscreenProvider>
+          <WebRTCProvider>
+            <div className="min-h-screen bg-background">
+              <RouterProvider router={router} />
+              <InstallPrompt />
+              <PWAUpdatePrompt />
+              <StatusBarSpacer />
+              <WebRTCDataRequestDialog />
+              <WebRTCPushedDataDialog />
+              <WebRTCNotifications />
+            </div>
+          </WebRTCProvider>
+        </FullscreenProvider>
+      </ScoutProvider>
     </ThemeProvider>
   );
 }
