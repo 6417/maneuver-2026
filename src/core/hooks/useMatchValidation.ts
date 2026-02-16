@@ -39,13 +39,14 @@ import {
     clearEventValidationResults,
 } from '@/core/lib/tbaCache';
 import { getAllMappedActionKeys, getAllMappedToggleKeys } from '@/game-template/game-schema';
+import { getEntriesByEvent } from '@/core/db/scoutingDatabase';
 import { toast } from 'sonner';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-interface ValidationProgress {
+export interface ValidationProgress {
     current: number;
     total: number;
     currentMatch: string;
@@ -515,7 +516,6 @@ async function getScoutingEntriesForEvent(eventKey: string): Promise<Array<{
     // This would query your scouting database
     // For now, return empty array - implement based on your DB schema
     try {
-        const { getEntriesByEvent } = await import('@/core/db/scoutingDatabase');
         const entries = await getEntriesByEvent(eventKey);
         return entries.map(e => ({
             matchKey: e.matchKey,
