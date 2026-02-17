@@ -101,3 +101,17 @@ export const gameDataTransformation: DataTransformation = {
 };
 
 export default gameDataTransformation;
+
+/**
+ * Game-specific gameData fields to exclude from CSV export.
+ * Override in game-year implementations to exclude visualization/replay data.
+ * Default: no fields excluded.
+ */
+export const csvExcludedFields: string[] = [];
+
+/**
+ * Game-specific pit scouting gameData fields to exclude from CSV export.
+ * Override in game-year implementations to exclude visualization/replay data.
+ * Default: no fields excluded.
+ */
+export const pitCsvExcludedFields: string[] = [];

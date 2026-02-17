@@ -4,6 +4,7 @@
  */
 
 import type { ScoutingEntryBase } from '@/types/scouting-entry';
+import { db } from '@/core/db/database';
 
 /**
  * Normalize event key for consistent storage and comparison
@@ -46,9 +47,65 @@ export const generateDataFingerprint = (entry: ScoutingEntryBase): string => {
   return (hash >>> 0).toString(36);
 };
 
+const parseMatchKeyForSort = (matchKey: string): { compOrder: number; setNumber: number; matchNumber: number; raw: string } => {
+  const raw = String(matchKey || '').trim();
+  const keyPart = raw.includes('_') ? (raw.split('_')[1] || raw) : raw;
+
+  const qm = keyPart.match(/^qm(\d+)$/i);
+  if (qm && qm[1]) {
+    return { compOrder: 1, setNumber: 1, matchNumber: Number.parseInt(qm[1], 10), raw };
+  }
+
+  const sf = keyPart.match(/^sf(\d+)m(\d+)$/i);
+  if (sf && sf[1] && sf[2]) {
+    return {
+      compOrder: 2,
+      setNumber: Number.parseInt(sf[1], 10),
+      matchNumber: Number.parseInt(sf[2], 10),
+      raw,
+    };
+  }
+
+  const f = keyPart.match(/^f(\d+)m(\d+)$/i);
+  if (f && f[1] && f[2]) {
+    return {
+      compOrder: 3,
+      setNumber: Number.parseInt(f[1], 10),
+      matchNumber: Number.parseInt(f[2], 10),
+      raw,
+    };
+  }
+
+  const numericOnly = Number.parseInt(keyPart.replace(/\D/g, ''), 10);
+  return {
+    compOrder: 9,
+    setNumber: 1,
+    matchNumber: Number.isNaN(numericOnly) ? Number.MAX_SAFE_INTEGER : numericOnly,
+    raw,
+  };
+};
+
+const compareMatchKeys = (a: string, b: string): number => {
+  const parsedA = parseMatchKeyForSort(a);
+  const parsedB = parseMatchKeyForSort(b);
+
+  if (parsedA.compOrder !== parsedB.compOrder) {
+    return parsedA.compOrder - parsedB.compOrder;
+  }
+
+  if (parsedA.setNumber !== parsedB.setNumber) {
+    return parsedA.setNumber - parsedB.setNumber;
+  }
+
+  if (parsedA.matchNumber !== parsedB.matchNumber) {
+    return parsedA.matchNumber - parsedB.matchNumber;
+  }
+
+  return parsedA.raw.localeCompare(parsedB.raw);
+};
+
 export const loadScoutingData = async (): Promise<ScoutingEntryBase[]> => {
   try {
-    const { db } = await import('@/core/db/database');
     const entries = await db.scoutingData.toArray();
     // Cast to ScoutingEntryBase since database returns generic version
     return entries as unknown as ScoutingEntryBase[];
@@ -60,7 +117,6 @@ export const loadScoutingData = async (): Promise<ScoutingEntryBase[]> => {
 
 export const saveScoutingData = async (entries: ScoutingEntryBase[]): Promise<void> => {
   try {
-    const { db } = await import('@/core/db/database');
     // Cast to match database generic type
     await db.scoutingData.bulkPut(entries as any);
   } catch (error) {
@@ -96,7 +152,7 @@ export const getDataSummary = async (): Promise<{
   return {
     totalEntries: entries.length,
     teams: Array.from(teams).sort((a, b) => a - b),
-    matches: Array.from(matches).sort(),
+    matches: Array.from(matches).sort(compareMatchKeys),
     scouts: Array.from(scouts).sort(),
     events: Array.from(events).sort()
   };
@@ -188,8 +244,6 @@ export const computeChangedFields = (
 export const detectConflicts = async (
   incomingData: ScoutingEntryBase[]
 ): Promise<ConflictDetectionResult> => {
-  const { db } = await import('@/core/db/database');
-  
   const autoImport: ScoutingEntryBase[] = [];
   const autoReplace: ScoutingEntryBase[] = [];
   const batchReview: ScoutingEntryBase[] = [];

@@ -39,13 +39,14 @@ import {
     clearEventValidationResults,
 } from '@/core/lib/tbaCache';
 import { getAllMappedActionKeys, getAllMappedToggleKeys } from '@/game-template/game-schema';
+import { getEntriesByEvent } from '@/core/db/scoutingDatabase';
 import { toast } from 'sonner';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-interface ValidationProgress {
+export interface ValidationProgress {
     current: number;
     total: number;
     currentMatch: string;
@@ -127,15 +128,9 @@ export function useMatchValidation({
         setError(null);
 
         try {
-            // Get TBA API key from environment variable
-            const apiKey = import.meta.env.VITE_TBA_API_KEY;
-            if (!apiKey) {
-                throw new Error('TBA API key not configured. Please set VITE_TBA_API_KEY in your .env file.');
-            }
-
             // Fetch matches from TBA
             setProgress({ current: 0, total: 1, currentMatch: '', phase: 'fetching-tba' });
-            await fetchEventMatches(eventKey, apiKey);
+            await fetchEventMatches(eventKey, '');
 
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to load matches';
@@ -521,7 +516,6 @@ async function getScoutingEntriesForEvent(eventKey: string): Promise<Array<{
     // This would query your scouting database
     // For now, return empty array - implement based on your DB schema
     try {
-        const { getEntriesByEvent } = await import('@/core/db/scoutingDatabase');
         const entries = await getEntriesByEvent(eventKey);
         return entries.map(e => ({
             matchKey: e.matchKey,
