@@ -1,8 +1,8 @@
 /**
  * Game Scoring Calculations
- * 
+ *
  * Calculates points for auto, teleop, and endgame phases.
- * 
+ *
  * DERIVED FROM: game-schema.ts
  * All point values come from the schema.
  */
@@ -19,12 +19,14 @@ export interface GameData {
     auto: {
         startPosition: number | null;
         // Action counters (derived from schema)
-        action1Count?: number;
-        action2Count?: number;
-        action3Count?: number;
-        action4Count?: number;
+        actionBalls1Count?: number;
+        actionBalls2Count?: number;
+        actionBalls4Count?: number;
+        actionBalls8Count?: number;
         // Auto toggles (derived from schema)
-        autoToggle?: boolean;
+        autoToggleIntakeBalls?: boolean;
+        autoToggleClimbL1?: boolean;
+        autoToggleClimbL1Try?: boolean;
         [key: string]: unknown;
     };
     teleop: {

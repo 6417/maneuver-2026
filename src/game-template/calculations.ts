@@ -1,10 +1,10 @@
 /**
  * Centralized Team Statistics Calculations
- * 
+ *
  * This is the SINGLE SOURCE OF TRUTH for all team stat calculations.
  * All pages (Strategy Overview, Match Strategy, etc.) should use this
  * via the useAllTeamStats hook instead of calculating their own stats.
- * 
+ *
  * YEAR-AGNOSTIC: Uses generic gameData fields (action1Count, action2Count, etc.)
  * instead of game-specific names. Customize the mapping in your game-template.
  */
@@ -57,11 +57,11 @@ export const calculateTeamStats = (teamMatches: ScoutingEntry[]): Omit<TeamStats
 
     // Auto game pieces
     const autoGamePiece1Total = sum(teamMatches, m =>
-        val(m.gameData?.auto?.action1Count) + val(m.gameData?.auto?.action2Count)
+        val(m.gameData?.auto?.actionBalls1Count) + val(m.gameData?.auto?.actionBalls1Count)
     );
 
     const autoGamePiece2Total = sum(teamMatches, m =>
-        val(m.gameData?.auto?.action3Count) + val(m.gameData?.auto?.action4Count)
+        val(m.gameData?.auto?.actionBalls2Count) + val(m.gameData?.auto?.actionBalls2Count)
     );
 
     // Teleop game pieces

@@ -1,9 +1,9 @@
 /**
  * Game-Specific Auto Start Position Selector Component
- * 
+ *
  * This component displays the field map with clickable zones for scouts
  * to select starting positions during autonomous mode scouting.
- * 
+ *
  * SINGLE SOURCE OF TRUTH: Uses zones and field images from analysis.ts
  * via getStartPositionConfig().
  */
@@ -21,7 +21,7 @@ interface AutoStartFieldSelectorProps {
 
 /**
  * Auto Start Field Selector
- * 
+ *
  * Uses the shared InteractiveFieldMap component with configuration from
  * strategyAnalysis.getStartPositionConfig() for consistent zones and images.
  */
@@ -44,13 +44,13 @@ export function AutoStartFieldSelector({
   return (
     <Card className="w-full">
       <CardHeader className="pb-3 lg:pb-4">
-        <CardTitle className="text-xl xl:text-2xl">Starting Position</CardTitle>
+        <CardTitle className="text-xl xl:text-2xl">Startposition</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Click where your robot starts on the field
+          Wähle das Startfeld vom Roboter aus
         </p>
         {hasSelection && (
           <Badge className="w-fit bg-green-600">
-            Position {selectedPosition} Selected
+            Position {selectedPosition} ausgewählt
           </Badge>
         )}
       </CardHeader>

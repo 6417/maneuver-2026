@@ -1,51 +1,53 @@
 /**
  * Game-Specific Status Toggles Component
- * 
+ *
  * This component provides phase-specific toggle buttons for tracking robot status
  * during autonomous, teleop, and endgame. Teams customize this to match their
  * game's boolean/toggle-based tracking needs.
- * 
+ *
  * IMPORTANT: Field names here MUST match transformation.ts!
  * When you customize the toggles, update transformation.ts to handle them.
- * 
+ *
  * PLACEHOLDER FIELD MAPPING (current → saved to database):
  * =========================================================
- * 
+ *
  * Auto Phase:
- *   - autoToggle → gameData.auto.autoToggle
- * 
+ *   - autoToggleIntakeBalls → gameData.auto.autoToggleIntakeBalls
+ *   - autoToggleClimbL1 → gameData.auto.autoToggleClimbL1
+ *   - autoToggleClimbL1Try → gameData.auto.autoToggleClimbL1Try
+ *
  * Teleop Phase:
  *   - teleopToggle → gameData.teleop.teleopToggle
- * 
+ *
  * Endgame Phase:
  *   - option1, option2, option3 → gameData.endgame.option1/2/3 (single selection)
  *   - toggle1, toggle2 → gameData.endgame.toggle1/2 (multiple selection)
- * 
+ *
  * HOW TO CUSTOMIZE FOR YOUR GAME YEAR:
  * ====================================
- * 
+ *
  * 1. Define phase-specific toggles (line crossing, defense, climbing, issues)
  * 2. Create toggle buttons for each status option
  * 3. Update status via onStatusUpdate callback with consistent field names
  * 4. UPDATE transformation.ts to initialize defaults for your field names
  * 5. Group related toggles (e.g., "Climbing" and "Issues" sections)
- * 
+ *
  * EXAMPLE: 2025 Reefscape Implementation
- * 
+ *
  * StatusToggles fields:
  *   - Auto: leftStartingZone
  *   - Teleop: playedDefense
  *   - Endgame: shallowClimbAttempted, deepClimbAttempted, parkAttempted, climbFailed, brokeDown
- * 
+ *
  * transformation.ts matching defaults:
  *   - auto: { leftStartingZone: false }
  *   - teleop: { playedDefense: false }
  *   - endgame: { shallowClimbAttempted: false, deepClimbAttempted: false, ... }
  */
 
-import { Card, CardContent } from "@/core/components/ui/card";
+// import { Card, CardContent } from "@/core/components/ui/card";
 import { Button } from "@/core/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+// import { AlertTriangle } from "lucide-react";
 
 interface StatusTogglesProps {
   phase: 'auto' | 'teleop' | 'endgame';
@@ -55,10 +57,10 @@ interface StatusTogglesProps {
 
 /**
  * Default/Placeholder Status Toggles Component
- * 
+ *
  * This is a simple placeholder that shows teams where to implement their
  * year-specific status toggles.
- * 
+ *
  * Replace this entire component with your game-specific implementation.
  */
 export function StatusToggles({
@@ -69,36 +71,52 @@ export function StatusToggles({
   return (
     <div className="space-y-4">
       {/* Placeholder Notice */}
-      <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <AlertTriangle className="h-8 w-8 text-amber-500" />
-            <h3 className="font-semibold text-sm">Game-Specific Implementation Needed</h3>
-            <p className="text-xs text-muted-foreground max-w-md">
-              Replace this component with your game year's status toggles.
-              See the JSDoc comments in this file for implementation guidance.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {/*<Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">*/}
+      {/*  <CardContent className="pt-6">*/}
+      {/*    <div className="flex flex-col items-center gap-2 text-center">*/}
+      {/*      <AlertTriangle className="h-8 w-8 text-amber-500" />*/}
+      {/*      <h3 className="font-semibold text-sm">Game-Specific Implementation Needed</h3>*/}
+      {/*      <p className="text-xs text-muted-foreground max-w-md">*/}
+      {/*        Replace this component with your game year's status toggles.*/}
+      {/*        See the JSDoc comments in this file for implementation guidance.*/}
+      {/*      </p>*/}
+      {/*    </div>*/}
+      {/*  </CardContent>*/}
+      {/*</Card>*/}
 
       {/* Autonomous Phase */}
+      {/* possible buttons: "link" | "default" | "destructive" | "outline" | "secondary" | "ghost" | null | undefined'.*/}
       {phase === 'auto' && (
         <div className="space-y-3">
           <div>
-            <h3 className="font-medium text-sm mb-1">Autonomous Status</h3>
-            <p className="text-xs text-muted-foreground mb-3">
-              Example: Line crossing, taxi points, auto-specific bonuses
-            </p>
+            <h3 className="font-medium text-sm mb-1">Autonomous Roboter</h3>
           </div>
           <Button
             onClick={() => onStatusUpdate({
-              autoToggle: !status?.autoToggle
+              autoToggleIntakeBalls: !status?.autoToggleIntakeBalls
             })}
-            variant={status?.autoToggle ? "default" : "outline"}
+            variant={status?.autoToggleIntakeBalls ? "default" : "outline"}
             className="w-full"
           >
-            {status?.autoToggle ? "✓ " : ""}Auto Toggle (e.g., Left Zone, Taxi)
+            {status?.autoToggleIntakeBalls ? "✓ " : ""}Hat Bälle eingesammelt
+          </Button>
+          <Button
+            onClick={() => onStatusUpdate({
+              autoToggleClimbL1: !status?.autoToggleClimbL1
+            })}
+            variant={status?.autoToggleClimbL1 ? "default" : "outline"}
+            className="w-full"
+          >
+            {status?.autoToggleClimbL1 ? "✓ " : ""}Klettern Level 1
+          </Button>
+          <Button
+            onClick={() => onStatusUpdate({
+              autoToggleClimbL1Try: !status?.autoToggleClimbL1Try
+            })}
+            variant={status?.autoToggleClimbL1Try ? "destructive" : "outline"}
+            className="w-full"
+          >
+            {status?.autoToggleClimbL1Try ? "✓ " : ""}Klettern Level 1 versucht
           </Button>
         </div>
       )}
