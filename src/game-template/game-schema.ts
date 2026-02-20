@@ -1,15 +1,15 @@
 /**
  * GAME SCHEMA - SINGLE SOURCE OF TRUTH
- * 
+ *
  * This file defines ALL game-specific configuration in one place.
  * When customizing for a new game year, edit ONLY this file.
- * 
+ *
  * Everything else is automatically derived:
  * - transformation.ts → uses schema to generate defaults
  * - scoring.ts → uses schema for point calculations
  * - calculations.ts → uses schema for stat aggregations
  * - strategy-config.ts → uses schema to generate columns
- * 
+ *
  * HOW TO CUSTOMIZE FOR YOUR GAME YEAR:
  * ====================================
  * 1. Update `workflowConfig` to enable/disable scouting pages
@@ -26,7 +26,7 @@
 /**
  * Configure which pages are included in the scouting workflow.
  * Set to `false` to skip a page entirely.
- * 
+ *
  * Examples:
  * - Skip starting position: autoStart: false
  * - Skip endgame: endgame: false  (teleop becomes submit page)
@@ -70,25 +70,25 @@ export type WorkflowRoutePage = 'autoStart' | 'autoScoring' | 'teleopScoring' | 
  */
 export const actions = {
     // Auto + Teleop actions (tracked in both phases)
-    action1: {
-        label: "Action 1",
-        description: "First scoring action",
-        points: { auto: 3, teleop: 2 },
+    actionBalls1Count: {
+        label: "1 Ball in Hub",
+        description: "Einzelner Ball",
+        points: { auto: 1, teleop: 1 },
     },
-    action2: {
-        label: "Action 2",
-        description: "Second scoring action",
-        points: { auto: 5, teleop: 4 },
+    actionBalls2Count: {
+        label: "2 Bälle in Hub",
+        description: "2 Bälle aufs Mal im Hub",
+        points: { auto: 2, teleop: 2 },
     },
-    action3: {
-        label: "Action 3",
-        description: "Third scoring action",
-        points: { auto: 2, teleop: 3 },
-    },
-    action4: {
-        label: "Action 4",
-        description: "Fourth scoring action",
+    actionBalls4Count: {
+        label: "4 Bälle in Hub",
+        description: "4er-Bälle-Serie",
         points: { auto: 4, teleop: 4 },
+    },
+    actionBalls8Count: {
+        label: "8 Bälle in Hub",
+        description: "ca. 8 Bälle aufs Mal im Hub",
+        points: { auto: 8, teleop: 8 },
     },
     // Teleop-only actions
     teleopSpecial: {
@@ -108,9 +108,17 @@ export const actions = {
  */
 export const toggles = {
     auto: {
-        autoToggle: {
-            label: "Auto Toggle",
-            description: "Example: Left Starting Zone",
+        autoToggleIntakeBalls: {
+            label: "Auto: Bälle aufnehmen",
+            description: "Nimmt im Auto-Modus Bälle auf",
+        },
+        autoToggleClimbL1: {
+            label: "Auto: Klettern L1",
+            description: "Klettert im Auto-Modus auf Level 1",
+        },
+        autoToggleClimbL1Try: {
+            label: "Auto: Versucht L1",
+            description: "Versucht im Auto-Modus auf Level 1 zu klettern",
         },
     },
     teleop: {
@@ -234,12 +242,12 @@ export type TBAMappingType = 'count' | 'countMatching' | 'boolean';
 /**
  * Maps game actions/toggles to TBA score breakdown fields for validation.
  * This allows the validation system to compare scouted data against TBA data.
- * 
+ *
  * HOW TO CUSTOMIZE:
  * 1. Update `categories` with your game's validation groupings
  * 2. Update `actionMappings` to map your actions to TBA breakdown paths
  * 3. Update `toggleMappings` for endgame/mobility toggles
- * 
+ *
  * TBA breakdown paths can be found by inspecting TBA API responses for your event.
  * See: https://www.thebluealliance.com/apidocs/v3
  */
@@ -256,7 +264,7 @@ export const tbaValidation = {
 
     /**
      * Action mappings - maps scouting action keys to TBA breakdown fields
-     * 
+     *
      * Template structure (customize for your game):
      * 'actionKey': {
      *   tbaPath: 'path.in.breakdown' or ['robot1Path', 'robot2Path', 'robot3Path'],
@@ -264,7 +272,7 @@ export const tbaValidation = {
      *   matchValue?: 'value to match' (required for countMatching),
      *   category: 'category-key',
      * }
-     * 
+     *
      * Example for 2025 REEFSCAPE:
      * 'autoCoralL1': { tbaPath: 'autoReef.trough', type: 'count', category: 'auto-actions' },
      * 'autoCoralL4': { tbaPath: 'autoReef.tba_topRowCount', type: 'count', category: 'auto-actions' },
@@ -301,10 +309,10 @@ export const tbaValidation = {
 
     /**
      * Toggle mappings - maps scouting toggles to TBA breakdown fields
-     * 
+     *
      * For per-robot fields (endgame, mobility), use array of paths:
      * tbaPath: ['endGameRobot1', 'endGameRobot2', 'endGameRobot3']
-     * 
+     *
      * Example for 2025 REEFSCAPE:
      * 'deepClimb': {
      *   tbaPath: ['endGameRobot1', 'endGameRobot2', 'endGameRobot3'],

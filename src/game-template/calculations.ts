@@ -66,11 +66,11 @@ export const calculateTeamStats = (teamMatches: ScoutingEntry[]): Omit<TeamStats
 
     // Teleop game pieces
     const teleopGamePiece1Total = sum(teamMatches, m =>
-        val(m.gameData?.teleop?.action1Count) + val(m.gameData?.teleop?.action2Count)
+        val(m.gameData?.teleop?.actionBalls1Count) + val(m.gameData?.teleop?.actionBalls1Count)
     );
 
     const teleopGamePiece2Total = sum(teamMatches, m =>
-        val(m.gameData?.teleop?.action3Count)
+        val(m.gameData?.teleop?.actionBalls2Count)
     );
 
     // Total game pieces

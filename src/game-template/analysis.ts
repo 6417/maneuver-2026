@@ -138,10 +138,14 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
         // Access game-specific data through entry.gameData
         const totals = entries.reduce((acc, entry) => {
             const gameData = entry.gameData;
-            acc.actionBalls1Count += gameData?.auto?.actionBalls1Count || 0;
-            acc.actionBalls2Count += gameData?.auto?.actionBalls2Count || 0;
-            acc.teleopAction1 += gameData?.teleop?.action1Count || 0;
-            acc.teleopAction2 += gameData?.teleop?.action2Count || 0;
+            acc.autoActionBalls1Count += gameData?.auto?.actionBalls1Count || 0;
+            acc.autoActionBalls2Count += gameData?.auto?.actionBalls2Count || 0;
+            acc.autoActionBalls4Count += gameData?.auto?.actionBalls4Count || 0;
+            acc.autoActionBalls8Count += gameData?.auto?.actionBalls8Count || 0;
+            acc.teleopAction1 += gameData?.teleop?.actionBalls1Count || 0;
+            acc.teleopAction2 += gameData?.teleop?.actionBalls2Count || 0;
+            acc.teleopAction3 += gameData?.teleop?.actionBalls2Count || 0;
+            acc.teleopAction4 += gameData?.teleop?.actionBalls2Count || 0;
             acc.endgameSuccess += gameData?.endgame?.option1 ? 1 : 0;
             acc.breakdown += gameData?.endgame?.option2 ? 1 : 0;
 
@@ -153,10 +157,14 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
 
             return acc;
         }, {
-            actionBalls1Count: 0,
-            actionBalls2Count: 0,
+            autoActionBalls1Count: 0,
+            autoActionBalls2Count: 0,
+            autoActionBalls4Count: 0,
+            autoActionBalls8Count: 0,
             teleopAction1: 0,
             teleopAction2: 0,
+            teleopAction3: 0,
+            teleopAction4: 0,
             endgameSuccess: 0,
             breakdown: 0,
             startPositionCounts: {} as Record<number, number>,
@@ -210,14 +218,14 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
             endgamePoints: matchResults.reduce((sum, m) => sum + m.endgamePoints, 0),
             overall: {
                 avgTotalPoints: Math.round((avgAutoPoints + avgTeleopPoints + avgEndgamePoints) * 10) / 10,
-                totalPiecesScored: totals.actionBalls1Count + totals.actionBalls2Count + totals.teleopAction1 + totals.teleopAction2,
-                avgGamePiece1: Math.round(((totals.actionBalls1Count + totals.teleopAction1) / matchCount) * 10) / 10,
-                avgGamePiece2: Math.round(((totals.actionBalls2Count + totals.teleopAction2) / matchCount) * 10) / 10,
+                totalPiecesScored: totals.autoActionBalls1Count + totals.autoActionBalls2Count + totals.teleopAction1 + totals.teleopAction2,
+                avgGamePiece1: Math.round(((totals.autoActionBalls1Count + totals.teleopAction1) / matchCount) * 10) / 10,
+                avgGamePiece2: Math.round(((totals.autoActionBalls2Count + totals.teleopAction2) / matchCount) * 10) / 10,
             },
             auto: {
                 avgPoints: Math.round(avgAutoPoints * 10) / 10,
-                avgGamePiece1: Math.round((totals.actionBalls1Count / matchCount) * 10) / 10,
-                avgGamePiece2: Math.round((totals.actionBalls2Count / matchCount) * 10) / 10,
+                avgGamePiece1: Math.round((totals.autoActionBalls1Count / matchCount) * 10) / 10,
+                avgGamePiece2: Math.round((totals.autoActionBalls2Count / matchCount) * 10) / 10,
                 mobilityRate: 0,
                 startPositions: Object.entries(startPositions).map(([key, value]) => ({ position: key, percentage: value })),
             },
@@ -237,8 +245,8 @@ export const strategyAnalysis: StrategyAnalysis<ScoutingEntryTemplate> = {
             avgAutoPoints: Math.round(avgAutoPoints * 10) / 10,
             avgTeleopPoints: Math.round(avgTeleopPoints * 10) / 10,
             avgEndgamePoints: Math.round(avgEndgamePoints * 10) / 10,
-            avgAutoAction1: Math.round((totals.actionBalls1Count / matchCount) * 10) / 10,
-            avgAutoAction2: Math.round((totals.actionBalls2Count / matchCount) * 10) / 10,
+            avgAutoAction1: Math.round((totals.autoActionBalls1Count / matchCount) * 10) / 10,
+            avgAutoAction2: Math.round((totals.autoActionBalls2Count / matchCount) * 10) / 10,
             avgTeleopAction1: Math.round((totals.teleopAction1 / matchCount) * 10) / 10,
             avgTeleopAction2: Math.round((totals.teleopAction2 / matchCount) * 10) / 10,
             mobilityRate: 0, // CUSTOMIZE: Add mobility tracking

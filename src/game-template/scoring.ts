@@ -31,10 +31,10 @@ export interface GameData {
     };
     teleop: {
         // Action counters (derived from schema)
-        action1Count?: number;
-        action2Count?: number;
-        action3Count?: number;
-        action4Count?: number;
+        actionBalls1Count?: number;
+        actionBalls2Count?: number;
+        actionBalls4Count?: number;
+        actionBalls8Count?: number;
         teleopSpecialCount?: number;
         // Teleop toggles (derived from schema)
         teleopToggle?: boolean;

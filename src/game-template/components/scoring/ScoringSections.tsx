@@ -147,14 +147,14 @@ export function ScoringSections({
         <CardHeader>
           <CardTitle>Bälle im Hub</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Example: Replace with game-specific scoring (e.g., 2025: Coral L1-L4)
+            Ob 6 oder 7 oder 8 ist egal, es geht um die ungefähre Anzahl.
           </p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-2">
             <Button
               onClick={() => onAddAction({
-                actionType: 'actionBallsCount1',
+                actionType: 'actionBalls1Count',
                 phase
               })}
               variant="outline"
@@ -162,12 +162,12 @@ export function ScoringSections({
             >
               <span>1 Ball</span>
               {actionBalls1Count > 0 && (
-                <span className="text-xs text-muted-foreground">({actionBalls1Count})</span>
+                <span className="text-xs text-muted-foreground">({actionBalls1Count} = {actionBalls1Count})</span>
               )}
             </Button>
             <Button
               onClick={() => onAddAction({
-                actionType: 'action2',
+                actionType: 'actionBalls2Count',
                 phase
               })}
               variant="outline"
@@ -175,7 +175,33 @@ export function ScoringSections({
             >
               <span>2 Bälle</span>
               {actionBalls2Count > 0 && (
-                <span className="text-xs text-muted-foreground">({actionBalls2Count})</span>
+                <span className="text-xs text-muted-foreground">({actionBalls2Count} * 2 = {actionBalls2Count * 2})</span>
+              )}
+            </Button>
+            <Button
+              onClick={() => onAddAction({
+                actionType: 'actionBalls4Count',
+                phase
+              })}
+              variant="outline"
+              className="h-16 flex flex-col items-center justify-center gap-1"
+            >
+              <span>4 Bälle</span>
+              {actionBalls4Count > 0 && (
+                <span className="text-xs text-muted-foreground">({actionBalls4Count} * 4 = {actionBalls4Count * 4})</span>
+              )}
+            </Button>
+            <Button
+              onClick={() => onAddAction({
+                actionType: 'actionBalls8Count',
+                phase
+              })}
+              variant="outline"
+              className="h-16 flex flex-col items-center justify-center gap-1"
+            >
+              <span>8 Bälle</span>
+              {actionBalls8Count > 0 && (
+                <span className="text-xs text-muted-foreground">({actionBalls8Count} * 8 = {actionBalls8Count * 8})</span>
               )}
             </Button>
           </div>
@@ -183,48 +209,48 @@ export function ScoringSections({
       </Card>
 
       {/* Example Scoring Section 2 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Scoring Section 2</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Example: Replace with game-specific scoring (e.g., 2025: Algae)
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Button
-              onClick={() => onAddAction({
-                actionType: 'action3',
-                phase
-              })}
-              variant="outline"
-              className="w-full h-12 flex items-center justify-between px-4"
-            >
-              <span>4 Bälle</span>
-              {actionBalls4Count > 0 && (
-                <span className="text-sm font-semibold bg-primary/10 px-2 py-1 rounded">
-                  {actionBalls4Count}
-                </span>
-              )}
-            </Button>
-            <Button
-              onClick={() => onAddAction({
-                actionType: 'action4',
-                phase
-              })}
-              variant="outline"
-              className="w-full h-12 flex items-center justify-between px-4"
-            >
-              <span>8 Bälle</span>
-              {actionBalls8Count > 0 && (
-                <span className="text-sm font-semibold bg-primary/10 px-2 py-1 rounded">
-                  {actionBalls8Count}
-                </span>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/*<Card>*/}
+      {/*  <CardHeader>*/}
+      {/*    <CardTitle>Scoring Section 2</CardTitle>*/}
+      {/*    <p className="text-sm text-muted-foreground">*/}
+      {/*      Example: Replace with game-specific scoring (e.g., 2025: Algae)*/}
+      {/*    </p>*/}
+      {/*  </CardHeader>*/}
+      {/*  <CardContent>*/}
+      {/*    <div className="space-y-2">*/}
+      {/*      <Button*/}
+      {/*        onClick={() => onAddAction({*/}
+      {/*          actionType: 'action3',*/}
+      {/*          phase*/}
+      {/*        })}*/}
+      {/*        variant="outline"*/}
+      {/*        className="w-full h-12 flex items-center justify-between px-4"*/}
+      {/*      >*/}
+      {/*        <span>4 Bälle</span>*/}
+      {/*        {actionBalls4Count > 0 && (*/}
+      {/*          <span className="text-sm font-semibold bg-primary/10 px-2 py-1 rounded">*/}
+      {/*            {actionBalls4Count}*/}
+      {/*          </span>*/}
+      {/*        )}*/}
+      {/*      </Button>*/}
+      {/*      <Button*/}
+      {/*        onClick={() => onAddAction({*/}
+      {/*          actionType: 'action4',*/}
+      {/*          phase*/}
+      {/*        })}*/}
+      {/*        variant="outline"*/}
+      {/*        className="w-full h-12 flex items-center justify-between px-4"*/}
+      {/*      >*/}
+      {/*        <span>8 Bälle</span>*/}
+      {/*        {actionBalls8Count > 0 && (*/}
+      {/*          <span className="text-sm font-semibold bg-primary/10 px-2 py-1 rounded">*/}
+      {/*            {actionBalls8Count}*/}
+      {/*          </span>*/}
+      {/*        )}*/}
+      {/*      </Button>*/}
+      {/*    </div>*/}
+      {/*  </CardContent>*/}
+      {/*</Card>*/}
 
       {/* Phase-specific example */}
       {phase === 'teleop' && (
